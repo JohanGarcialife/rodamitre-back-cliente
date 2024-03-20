@@ -38,10 +38,12 @@ router.post("/marcarticulo", getmarcaArticulo )
 router.post("/rubro", getrubroArticulo )
 /**rubro segun su modelo de vehiculo */
 router.post("/rubromod", getrubrosMod )
-////////atributos//////
+////////motor segun su rubro//////
 router.post("/motorud", getmotorRu )
+///////busqueda por cogigo//////////
+router.post("/busqcogido/:id/:lpp", busquedaCodigo )
 //////////////////////////////////////////
-router.get("/atributos", busquedaCodigo);
+//router.get("/atributos", busquedaCodigo);
 /*buscador familias*/
 /* view consulta todos los vehiculos */ 
 /*view consulta todas las marcas*/

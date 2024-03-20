@@ -30,7 +30,7 @@ export const getviewConsult = async (req, res) => {
    const pool = await getConnection();
   const result = await pool
     .request()
-    .query(`SELECT * FROM VIEW_CONSULTA_DESCRIPCIONES WHERE PRE_ID < 20  `);
+    .query(`SELECT pre_id, marca_auto, modelo, descripcion_completa as descripcion  FROM VIEW_CONSULTA_DESCRIPCIONES WHERE PRE_ID >18600 and PRE_ID  <18900 `);
   return res.json( result.recordset);
 };
 
@@ -178,9 +178,6 @@ export const getviewConsultAuto = async (req, res) => {
  return res.json( result.recordset); 
 }
 
-
-
-
  /*6*/   if (req.body.rud_id && !req.body.mau_id && !req.body.rubro && !req.body.mar_id)
        {
         console.log("solo SP")
@@ -290,7 +287,6 @@ export const getviewConsultAuto = async (req, res) => {
    );
    return res.json( result.recordset); 
  }
-
 }; 
 
 /* producotos consulta modelo vehiculos */
@@ -341,9 +337,7 @@ export const getvehiculosmarcaId = async (req, res) => {
   return res.json(result.recordset);
 };
 
-
 /*Super rubros todos y segun la marca del auto */
-
 export const getrubrosId = async (req, res) => {
   console.log(req.body.mau_id);
   const pool = await getConnection();
@@ -368,7 +362,6 @@ export const getrubrosId = async (req, res) => {
 };
 
 /*Super todas las marcas y segun el rubro */
-
 export const getmarcaArticulo = async (req, res) => {
 const pool = await getConnection();
   
@@ -414,16 +407,12 @@ const pool = await getConnection();
     join PRODUCTOS as p on v.pre_id = p.pre_id  where p.spr_id in (${req.body.rud_id}) and v.rubro in ('${req.body.rubro}') `)
     return res.json(result.recordset);
   }
-
-
 };
 
 ////////// rubros segun su super rubro o marca ///////
 
 export const getrubroArticulo = async (req, res) => {
- 
    const pool = await getConnection();
-    
     if ( req.body?.mau_id  && req.body.rud_id && !req.body.mar_id  )
     {  
       const result = await pool
@@ -454,9 +443,7 @@ export const getrubroArticulo = async (req, res) => {
     }
   };
   
-///////////
-
-
+/////////// Rrubro por modelo /////
 export const getrubrosMod = async (req, res) => {
   const pool = await getConnection();
 
@@ -468,24 +455,37 @@ export const getrubrosMod = async (req, res) => {
     return res.json(result.recordset);
 };
 
+///////////// motor segun el rubro /////
 export const getmotorRu = async (req, res) => {
-
   const pool = await getConnection();
-
     const result = await pool
     .request() 
     .query(`SELECT  DISTINCT  v.motor from VIEW_CONSULTA_DESCRIPCIONES as v
-    where  v.mod_id in (${req.body.mod_id}) and v.rup_id in (${req.body.rubro})   `)
+    where v.mod_id in (${req.body.mod_id}) and v.rup_id in (${req.body.rubro})`)
     return res.json(result.recordset);
 };
- 
 
-// /*prueba productos relacion */
+// /*prueba codigo relacion */
 
-export const busquedaCodigo = async (req, res) => {
+ export const busquedaCodigo = async (req, res) => {   
   const pool = await getConnection();
   const result = await pool
     .request()
-    .query("SELECT pre_id, codigo, atributo, valor from VIEW_CONSULTA_ATRIBUTOS WHERE codigo = '636114' ");
+    .input("id", sql.Int, req.params.id)
+    .input("lpp", sql.Int, req.params.lpp)
+    .query(`SELECT DISTINCT  v.pre_id , v.codigo, v.super_rubro, r.rup_descripcion as rubro, p.rup_id, v.marca_articulo, v.notas, v.comentarios, 
+    p.mar_id, cdm.cdm_descuento as descuento_marca, cdp.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro,
+    p.pre_stock_actual, dpv.ppa_precio, p.atributos, p.intercambiables, p.formado_por, p.es_parte_de, p.ventas_ult6meses
+    from VIEW_CONSULTA_DESCRIPCIONES as v 
+    join DETALLE_LISTA_PRECIOS_VENTA  as dpv on v.pre_id = dpv.pre_id
+    join PRODUCTOS as p on v.pre_id = p.pre_id 
+    join RUBROS as r on p.rup_id = r.rup_id
+    left join CLIENTES_DESC_PROCEDENCIAS as cdm on p.mar_id = cdm.mar_id and cdm.cli_id = @id and cdm.CDM_ACTIVO = 'SI'
+    left join CLIENTES_DESC_PRODUCTOS as cdp on  v.pre_id = cdp.pre_id and cdp.cli_id = @id and cdp.CDP_ACTIVO = 'SI'
+    left join CLIENTES_DESC_RUBROS as cdr on  p.rup_id = cdr.rup_id  and cdr.cli_id = @id and cdr.CDR_ACTIVO = 'SI'
+    WHERE dpv.LPP_ID = @lpp and v.codigo in ('${req.body.codigo}')`);
   return res.json(result.recordset);
-};
+}; 
+
+
+
