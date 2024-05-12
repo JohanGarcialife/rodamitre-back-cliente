@@ -2,11 +2,12 @@ import sql from 'mssql'
 
 const dbSettings = {
     user: "SA", ////este usuario es por defecto, si no te agarra a ti seguro es en minusculas
-    password:"Orion.2023*/", /// clave del servidor 
-    server:"localhost",
-    database: "DB_RODAMITRE_WEB",////nombre de la base de datos
+    password:"4L3x_R0m4n", /// clave del servidor 
+    server:"10.0.0.237",
+    database: "DB_RODAMITRE_WEB_ATIKA",////nombre de la base de datos
+    requestTimeout: 300000,
     options: {
-        encrypt:true,
+        encrypt:false,
         trustServerCertificate: true
     }
 }
