@@ -10,10 +10,15 @@ import {
   getrubroArticulo,
   getrubrosMod,
   getmotorRu,
-  buscador,
+  //buscador,
+  getCodiB,
+  getMarcProdut,
+  getMotorProduct
    //atributos
  
 } from "../controllers/products.controllers.js";
+
+import { buscador } from "../controllers/products.controllers.buscador.js";
 
 const router = Router();
 
@@ -31,7 +36,7 @@ router.get("/modelos/:id", getvehiculosmarcaId);
 /*rubros todos y con id de marcaAuto */////
 router.post("/superubrosAuto", getrubrosId);
 /////// marca articulo, todas las marcas o /////////////
-router.post("/marcarticulo", getmarcaArticulo )
+router.post("/marcarticulo", getmarcaArticulo ) 
 /*rubro segun su suṕer rubro o marca de articulo */
 router.post("/rubro", getrubroArticulo )
 /**rubro segun su modelo de vehiculo */////
@@ -39,7 +44,16 @@ router.post("/rubromod", getrubrosMod )
 //////// motor segun su rubro /////////
 router.post("/motorud", getmotorRu )
 ///////busqueda por cogigo//////////
-router.post("/buscador/:id/:lpp", buscador )
+router.post("/buscador/:id/:lpp", buscador )//
+////codigo
+router.post("/codigo", getCodiB )
+////// marca codigo
+router.post("/marcaproduct", getMarcProdut );
+///mootor///
+router.get("/motorcar/:id", getMotorProduct);
+
+
+
 ////////////////////////////////////////////////
 //router.get("/atributos", atributos);////////
 /*buscador familias*/
