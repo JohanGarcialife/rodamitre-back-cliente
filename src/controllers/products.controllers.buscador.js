@@ -64,7 +64,7 @@ export const buscador = async (req, res) => {
     where ma.mau_descripcion like '%${req.body.p}%' or m.mod_descripcion like '%${req.body.p}%' or p.pre_codigo_fabrica like '%${req.body.p}%'
     or r.rup_descripcion like '%${req.body.p}%'`;
 
-  const d = `SELECT DISTINCT PRE_CODIGO_FABRICA,MAR_DESCRIPCION,PPA_PRECIO FROM  MARCAS_PRODUCTOS WITH(NOLOCK) INNER JOIN
+  const d = `SELECT DISTINCT pre_codigo_fabrica as codigo,mar_descripcion as marca_articulo,ppa_precio FROM  MARCAS_PRODUCTOS WITH(NOLOCK) INNER JOIN
  DETALLE_LISTA_PRECIOS_VENTA WITH(NOLOCK) INNER JOIN PRODUCTOS WITH(NOLOCK) ON DETALLE_LISTA_PRECIOS_VENTA.PRE_ID 
  = PRODUCTOS.PRE_ID ON MARCAS_PRODUCTOS.MAR_ID = PRODUCTOS.MAR_ID WHERE LPP_ID = ${req.params.lpp}`;
 
