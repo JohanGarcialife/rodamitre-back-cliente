@@ -87,6 +87,9 @@ export const buscador = async (req, res) => {
     ? parseInt(req.body.interior) - 0.5
     : req.body.interior;
 
+
+    console.log(req.body)
+
   if (req.body.p) {
     if (
       req.body.p &&

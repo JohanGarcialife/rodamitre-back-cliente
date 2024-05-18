@@ -522,12 +522,12 @@ export const getrubrosId = async (req, res) => {
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.super_rubro, p.spr_id  from VIEW_CONSULTA_DESCRIPCIONES as v
     join PRODUCTOS as p on v.pre_id = p.pre_id
-    where  mau_id in (${req.body.mau_id})`);
+    where  mau_id in (${req.body.mau_id}) order by v.super_rubro asc`);
     return res.json(result.recordset);
   } else {
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.super_rubro, p.spr_id  from VIEW_CONSULTA_DESCRIPCIONES as v
-    join PRODUCTOS as p on v.pre_id = p.pre_id
+    join PRODUCTOS as p on v.pre_id = p.pre_id order by v.super_rubro asc
     `);
     return res.json(result.recordset);
   }
@@ -540,25 +540,25 @@ export const getmarcaArticulo = async (req, res) => {
   if (!req.body?.mau_id && !req.body.rud_id && !req.body.rubro) {
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.marca_articulo as marca_a , p.mar_id  from VIEW_CONSULTA_DESCRIPCIONES as v 
-    join PRODUCTOS as p on v.pre_id = p.pre_id`);
+    join PRODUCTOS as p on v.pre_id = p.pre_id order by v.marca_articulo asc`);
     return res.json(result.recordset);
   }
   if (req.body?.mau_id && !req.body.rud_id && !req.body.rubro) {
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.marca_articulo as marca_a , p.mar_id  from VIEW_CONSULTA_DESCRIPCIONES as v 
-    join PRODUCTOS as p on v.pre_id = p.pre_id  where v.mau_id in (${req.body.mau_id}) `);
+    join PRODUCTOS as p on v.pre_id = p.pre_id  where v.mau_id in (${req.body.mau_id}) order by v.marca_articulo asc `);
     return res.json(result.recordset);
   }
   if (req.body.rud_id && !req.body.mau_id && !req.body.rubro) {
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.marca_articulo as marca_a , p.mar_id  from VIEW_CONSULTA_DESCRIPCIONES as v 
-    join PRODUCTOS as p on v.pre_id = p.pre_id  where p.spr_id in (${req.body.rud_id}) `);
+    join PRODUCTOS as p on v.pre_id = p.pre_id  where p.spr_id in (${req.body.rud_id}) order by v.marca_articulo asc `);
     return res.json(result.recordset);
   }
   if (req.body.rud_id && req.body.mau_id && !req.body.rubro) {
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.marca_articulo as marca_a , p.mar_id  from VIEW_CONSULTA_DESCRIPCIONES as v 
-    join PRODUCTOS as p on v.pre_id = p.pre_id  where v.mau_id in (${req.body.mau_id}) and p.spr_id in (${req.body.rud_id}) `);
+    join PRODUCTOS as p on v.pre_id = p.pre_id  where v.mau_id in (${req.body.mau_id}) and p.spr_id in (${req.body.rud_id}) order by v.marca_articulo asc `);
     return res.json(result.recordset);
   }
 
@@ -580,14 +580,16 @@ export const getrubroArticulo = async (req, res) => {
     const result = await pool.request()
       .query(`SELECT DISTINCT v.rubro, r.rup_descripcion from VIEW_CONSULTA_DESCRIPCIONES as v
       join Rubros as r on v.rubro = r.rup_codigo
-      where v.MAU_ID in (${req.body.mau_id}) and r.spr_id in (${req.body.rud_id})`);
+      where v.MAU_ID in (${req.body.mau_id}) and r.spr_id in (${req.body.rud_id})
+      order by r.rup_descripcion asc`);
     return res.json(result.recordset);
   }
   if (req.body.rud_id && !req.body?.mau_id && !req.body.mar_id) {
     const result = await pool.request()
       .query(`SELECT DISTINCT v.rubro, r.rup_descripcion from VIEW_CONSULTA_DESCRIPCIONES as v
-      join Rubros as r on v.rubro = r.rup_codigo
-      where r.spr_id in (${req.body.rud_id})`);
+      join Rubros as r on v.rubro = r.rup_codigo 
+      where r.spr_id in (${req.body.rud_id}) 
+      order by r.rup_descripcion asc`);
     return res.json(result.recordset);
   }
 
@@ -596,7 +598,8 @@ export const getrubroArticulo = async (req, res) => {
       .query(`SELECT DISTINCT v.rubro, r.rup_descripcion from VIEW_CONSULTA_DESCRIPCIONES as v
       join Rubros as r on v.rubro = r.rup_codigo
       join Productos as p on v.pre_id = p.pre_id
-      where v.MAU_ID in (${req.body.mau_id}) and r.spr_id in (${req.body.rud_id}) and p.mar_id in (${req.body.mar_id})`);
+      where v.MAU_ID in (${req.body.mau_id}) and r.spr_id in (${req.body.rud_id}) and p.mar_id in (${req.body.mar_id})
+      order by r.rup_descripcion asc`);
     return res.json(result.recordset);
   }
 };
@@ -608,7 +611,7 @@ export const getrubrosMod = async (req, res) => {
   const result = await pool.request()
     .query(`SELECT  DISTINCT  v.rup_id, r.rup_descripcion from VIEW_CONSULTA_DESCRIPCIONES as v
     join RUBROS  as r on v.rup_id = r.rup_id
-    where  v.mod_id in  (${req.body.mod_id})`);
+    where  v.mod_id in  (${req.body.mod_id}) order by r.rup_descripcion asc`);
   return res.json(result.recordset);
 };
 
