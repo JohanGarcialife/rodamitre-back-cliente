@@ -18,7 +18,7 @@ import {
  
 } from "../controllers/products.controllers.js";
 
-import { buscador, prueba } from "../controllers/products.controllers.buscador.js";
+import { buscador } from "../controllers/products.controllers.buscador.js";
 
 const router = Router();
 
@@ -52,7 +52,7 @@ router.post("/marcaproduct", getMarcProdut );
 ///mootor///
 router.get("/motorcar/:id", getMotorProduct);
 //////pruebaaa///////
-router.get("/prueba", prueba)
+
 
 
 

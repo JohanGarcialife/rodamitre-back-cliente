@@ -33,7 +33,7 @@ export const buscador = async (req, res) => {
     mp.mar_descripcion as marca_articulo, sr.spr_descripcion as super_rubro, r.rup_descripcion as rubro, cdp.cdm_descuento as descuento_marca, 
     cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio, dlpv.lpp_id
     from PRODUCTOS p
-    left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal
+    left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal OR p.pre_codigo_fabrica = pe.codigo_equivalente
     join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
     Join SUPER_RUBROS sr on p.spr_id = sr.spr_id
     join RUBROS r on p.rup_id = r.rup_id
@@ -95,7 +95,7 @@ export const buscador = async (req, res) => {
           .query(
             d.concat(
               " ",
-              `AND PRODUCTOS.PRE_ID IN (${result.recordset[0].pre_ids_mostrar}) ORDER BY MAR_DESCRIPCION`
+              `AND PRODUCTOS.PRE_ID IN (${result.recordset[0].pre_ids_mostrar}) ORDER BY ppa_precio DESC`
             )
           );
         console.log(result);
@@ -554,47 +554,5 @@ export const buscador = async (req, res) => {
 
     return res.json(result.recordset);
   }
-};
-
-
-export const prueba = async (req, res) => {
-  const pool = await getConnection();
-  const result = await pool
-    .request()
-    .query(`
-    select distinct p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual,p.ventas_ult6meses, 
-    (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id 
-    and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos, mp.mar_descripcion as marca_articulo, r.rup_descripcion as rubro, p.rup_id,
-    cdp.cdm_descuento as descuento_marca,cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio,
-    (select distinct md.mde_descripcion as motor from MOTORES_DENOMINACIONES md--, PRODUCTOS_DESCRIPCIONES pd2 
-    where pd.mde_id = md.mde_id and p.pre_id = pd.pre_id FOR JSON PATH) as motor
-    from PRODUCTOS p 
-    join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
-    join PRODUCTOS_DESCRIPCIONES pd on p.pre_id = pd.pre_id
-    join RUBROS r on p.rup_id = r.rup_id
-    join DETALLE_LISTA_PRECIOS_VENTA dlpv on p.pre_id = dlpv.pre_id and p.pre_activo  = 'SI'
-    left join CLIENTES_DESC_PROCEDENCIAS cdp on cdp.cli_id = 1 and p.mar_id = cdp.mar_id and cdp.cdm_activo = 'SI' 
-    left join CLIENTES_DESC_PRODUCTOS cdp2 on cdp2.cli_id = 1 and p.pre_id = cdp2.pre_id and cdp2.cdp_activo = 'SI'  
-    left join CLIENTES_DESC_RUBROS cdr on cdr.cli_id = 1 and p.rup_id = cdr.rup_id  and cdr.cdr_activo = 'SI' 
-    WHERE dlpv.lpp_id = 1 and pd.mod_id in (821) /*and p.rup_id in (6)*/ order by p.ventas_ult6meses DESC OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY   
-      `);
-      if (result.recordset){
-        
-
-        const pro = result.recordset;
-        /* const codigos = [...new Set(pro.map(pr => pr.codigo))]
-        const usersByType = {}
-        codigos.forEach(codigo => (usersByType[codigo] = pro.filter(pr => pr.codigo === codigo)))
-        console.log(usersByType) */
-      }
-      
-
-      return res.json(result.recordset);
-    
-    
-      /*  const usersByType = Object.groupBy(result.recordset, user => user.codigo);
-
-console.log(usersByType) */
-
 };
 
