@@ -3,29 +3,35 @@ import { getConnection } from "../database/connections.js";
 
 /* productos id por cliente */
 export const geproductosId = async (req, res) => {
+  console.log("consultando familias");
   const pool = await getConnection();
   const result = await pool
     .request()
     .input("id", sql.Int, req.params.id)
     .input("lpp", sql.Int, req.params.lpp)
     .query(
-      /* `select p.pre_id, p.pre_codigo_fabrica as codigo, p.mar_id, p.rup_id , p.spr_id, p.pre_notas as notas, p.pre_comentarios as comentarios, 
-      r.rup_descripcion as rubro, sr.spr_descripcion as super_rubro, mp.mar_descripcion as marca_articulo, p.intercambiables, p.formado_por, p.es_parte_de,
-      (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, productos_atributos pa where pa.atr_id = a.atr_id 
-	  and pa.pre_id = p.PRE_ID  FOR JSON PATH ) as atributos,(select distinct v.marca_auto, v.modelo, (select distinct descripcion_completa as descripcion 
-      from VIEW_CONSULTA_DESCRIPCIONES vr where v.marca_auto = vr.marca_auto and v.modelo = vr.modelo and vr.pre_id= p.pre_id FOR JSON PATH) as hover
-      from VIEW_CONSULTA_DESCRIPCIONES v where p.pre_id = v.pre_id FOR JSON PATH ) as aplicaciones,
-      cdp.cdp_descuento as descuento_producto,cdm.CDM_DESCUENTO as descuento_marca , cdr.cdr_descuento as descuento_rubro, dpv.ppa_precio, p.pre_stock_actual 
-      from PRODUCTOS as p  
-      left join MARCAS_PRODUCTOS as mp on p.MAR_ID = mp.MAR_ID 
+      `select p.pre_id, p.pre_codigo_fabrica as codigo, p.mar_id, p.rup_id , p.spr_id, p.pre_notas as notas, p.pre_comentarios as comentarios,
+      r.rup_descripcion as rubro, sr.spr_descripcion as super_rubro, mp.mar_descripcion as marca_articulo, p.intercambiables, p.formado_por, p.es_parte_de, p.ventas_ult6meses,
+	    (select distinct pd.marca_modelo, (select distinct pd4.descripcion_hover as hover
+      from productos_descripciones pd4 where pd.marca_modelo = pd4.marca_modelo and pd4.pre_id= p.pre_id FOR JSON PATH) as hover
+      from productos_descripciones pd where p.pre_id = pd.pre_id FOR JSON PATH ) as aplicaciones,
+	    (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id
+      and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos,
+      (select distinct p2.pre_codigo_fabrica as codigo, pe.pre_id_principal, pe.pre_id_equivalente, mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, p2.pre_stock_actual
+	    from PRODUCTOS_EQUIVALENCIAS pe, PRODUCTOS p2, MARCAS_PRODUCTOS mp2, DETALLE_LISTA_PRECIOS_VENTA dpv2 
+	    where  pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.mar_id = mp2.mar_id and p2.PRE_ID = dpv2.PRE_ID and dpv2.LPP_ID = @lpp and p2.pre_activo = 'SI'
+	    order by dpv2.ppa_precio desc FOR JSON PATH ) as equivalente,
+      cdp.cdp_descuento as descuento_producto,cdm.CDM_DESCUENTO as descuento_marca, cdr.cdr_descuento as descuento_rubro, dpv.ppa_precio, p.pre_stock_actual
+      from PRODUCTOS as p
+      left join MARCAS_PRODUCTOS as mp on p.MAR_ID = mp.MAR_ID
       join SUPER_RUBROS as sr on p.spr_id = sr.spr_id
       join RUBROS as r on p.rup_id = r.rup_id
-      left join DETALLE_LISTA_PRECIOS_VENTA  as dpv on p.PRE_ID = dpv.PRE_ID and p.PRE_ACTIVO = 'SI' 
-      left join CLIENTES_DESC_PROCEDENCIAS as cdm on p.MAR_ID = cdm.MAR_ID and cdm.CLI_ID = @id and cdm.CDM_ACTIVO = 'SI' 
-      left join CLIENTES_DESC_PRODUCTOS as cdp on  p.PRE_ID = cdp.PRE_ID and cdp.cli_id = @id and cdp.CDP_ACTIVO = 'SI' 
-      left join CLIENTES_DESC_RUBROS as cdr on  p.RUP_ID = cdr.RUP_ID  and cdr.cli_id = @id and cdr.CDR_ACTIVO = 'SI' 
-      WHERE dpv.LPP_ID = @lpp and  p.ventas_ult6meses > 30 order by p.ventas_ult6meses DESC` */
-
+      left join DETALLE_LISTA_PRECIOS_VENTA  as dpv on p.PRE_ID = dpv.PRE_ID and p.PRE_ACTIVO = 'SI'
+      left join CLIENTES_DESC_PROCEDENCIAS as cdm on p.MAR_ID = cdm.MAR_ID and cdm.CLI_ID = @id and cdm.CDM_ACTIVO = 'SI'
+      left join CLIENTES_DESC_PRODUCTOS as cdp on  p.PRE_ID = cdp.PRE_ID and cdp.cli_id = @id and cdp.CDP_ACTIVO = 'SI'
+      left join CLIENTES_DESC_RUBROS as cdr on  p.RUP_ID = cdr.RUP_ID  and cdr.cli_id = @id and cdr.CDR_ACTIVO = 'SI'
+      WHERE dpv.LPP_ID = @lpp order by p.ventas_ult6meses DESC OFFSET 0 ROWS FETCH NEXT 20 ROWS ONLY`
+      /*
       `select distinct p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual, p.intercambiables, p.formado_por, 
       p.es_parte_de, p.ventas_ult6meses,
       (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos,
@@ -42,8 +48,8 @@ export const geproductosId = async (req, res) => {
       left join CLIENTES_DESC_PROCEDENCIAS cdp on cdp.cli_id = @id and p.mar_id = cdp.mar_id and cdp.cdm_activo = 'SI' 
       left join CLIENTES_DESC_PRODUCTOS cdp2 on cdp2.cli_id = @id and p.pre_id = cdp2.pre_id and cdp2.cdp_activo = 'SI'  
       left join CLIENTES_DESC_RUBROS cdr on cdr.cli_id = @id and p.rup_id = cdr.rup_id  and cdr.cdr_activo = 'SI' 
-      WHERE dlpv.lpp_id = @lpp and p.pre_id < 11
-      `
+      WHERE dlpv.lpp_id = @lpp and p.ventas_ult6meses > 30 order by p.ventas_ult6meses DESC
+      `*/
     );
 
   return res.json(result.recordset);
@@ -418,29 +424,34 @@ export const getviewConsultAuto = async (req, res) => {
 
 export const getviewConsultmodelo = async (req, res) => {
   const pool = await getConnection();
-
+  console.log(req.body);
+  const producto = `select distinct p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual,p.ventas_ult6meses, 
+  (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id 
+  and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos, mp.mar_descripcion as marca_articulo, r.rup_descripcion as rubro, p.rup_id,
+  cdp.cdm_descuento as descuento_marca,cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio, 
+  pd.mau_id, pd.mod_id,
+  (select md.mde_descripcion from MOTORES_DENOMINACIONES md where pd.mde_id = md.mde_id FOR JSON PATH) as motor
+  from PRODUCTOS p 
+  join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
+  join PRODUCTOS_DESCRIPCIONES pd on p.pre_id = pd.pre_id
+  join RUBROS r on p.rup_id = r.rup_id
+  join DETALLE_LISTA_PRECIOS_VENTA dlpv on p.pre_id = dlpv.pre_id and p.pre_activo  = 'SI'
+  left join CLIENTES_DESC_PROCEDENCIAS cdp on cdp.cli_id = ${req.params.id} and p.mar_id = cdp.mar_id and cdp.cdm_activo = 'SI' 
+  left join CLIENTES_DESC_PRODUCTOS cdp2 on cdp2.cli_id = ${req.params.id} and p.pre_id = cdp2.pre_id and cdp2.cdp_activo = 'SI'  
+  left join CLIENTES_DESC_RUBROS cdr on cdr.cli_id = ${req.params.id} and p.rup_id = cdr.rup_id  and cdr.cdr_activo = 'SI' 
+  WHERE dlpv.lpp_id = ${req.params.lpp}   
+  `;
   if (req.body.mod_id && !req.body.rubro) {
     const result = await pool
       .request()
       .input("id", sql.Int, req.params.id)
       .input("lpp", sql.Int, req.params.lpp)
       .query(
-        `SELECT DISTINCT  v.pre_id , v.codigo, v.super_rubro, (select distinct md.mde_descripcion as motor from MOTORES_DENOMINACIONES md, VIEW_CONSULTA_DESCRIPCIONES vcd  where vcd.mde_id = md.mde_id and v.pre_id = vcd.pre_id and v.mod_id = (${req.body.mod_id}) FOR JSON PATH ) as motor, r.rup_descripcion as rubro, p.rup_id, v.marca_articulo, v.notas, v.comentarios, 
-    p.mar_id, cdm.cdm_descuento as descuento_marca, cdp.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro,
-    p.pre_stock_actual, dpv.ppa_precio, p.intercambiables, p.formado_por, p.es_parte_de,
-    (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, productos_atributos pa where pa.atr_id = a.atr_id 
-    and pa.pre_id = p.PRE_ID  FOR JSON PATH ) as atributos,
-    p.ventas_ult6meses
-    from VIEW_CONSULTA_DESCRIPCIONES as v 
-    join DETALLE_LISTA_PRECIOS_VENTA  as dpv on v.pre_id = dpv.pre_id
-    join PRODUCTOS as p on v.pre_id = p.pre_id 
-    join RUBROS as r on p.rup_id = r.rup_id
-    left join CLIENTES_DESC_PROCEDENCIAS as cdm on p.mar_id = cdm.mar_id and cdm.cli_id = @id and cdm.CDM_ACTIVO = 'SI'
-    left join CLIENTES_DESC_PRODUCTOS as cdp on  v.pre_id = cdp.pre_id and cdp.cli_id = @id and cdp.CDP_ACTIVO = 'SI'
-    left join CLIENTES_DESC_RUBROS as cdr on  p.rup_id = cdr.rup_id  and cdr.cli_id = @id and cdr.CDR_ACTIVO = 'SI'
-    WHERE dpv.LPP_ID = @lpp and v.mod_id in (${req.body.mod_id}) order by p.ventas_ult6meses DESC `
+        producto.concat(
+          " ",
+          `and pd.mod_id = (${req.body.mod_id}) order by p.ventas_ult6meses`
+        )
       );
-
     return res.json(result.recordset);
   }
 
@@ -450,21 +461,12 @@ export const getviewConsultmodelo = async (req, res) => {
       .input("id", sql.Int, req.params.id)
       .input("lpp", sql.Int, req.params.lpp)
       .query(
-        `SELECT DISTINCT  v.pre_id , v.codigo, v.super_rubro, (select distinct md.mde_descripcion as motor from MOTORES_DENOMINACIONES md, VIEW_CONSULTA_DESCRIPCIONES vcd  where vcd.mde_id = md.mde_id and v.pre_id = vcd.pre_id  FOR JSON PATH ) as motor, r.rup_descripcion as rubro, p.rup_id, v.marca_articulo, v.notas, v.comentarios, 
-    p.mar_id, cdm.cdm_descuento as descuento_marca, cdp.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro,
-    p.pre_stock_actual, dpv.ppa_precio, p.intercambiables, p.formado_por, p.es_parte_de,
-    (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, productos_atributos pa where pa.atr_id = a.atr_id 
-    and pa.pre_id = p.PRE_ID  FOR JSON PATH ) as atributos,
-    p.ventas_ult6meses
-    from VIEW_CONSULTA_DESCRIPCIONES as v 
-    join DETALLE_LISTA_PRECIOS_VENTA  as dpv on v.pre_id = dpv.pre_id
-    join PRODUCTOS as p on v.pre_id = p.pre_id 
-    join RUBROS as r on p.rup_id = r.rup_id
-    left join CLIENTES_DESC_PROCEDENCIAS as cdm on p.mar_id = cdm.mar_id and cdm.cli_id = @id and cdm.CDM_ACTIVO = 'SI'
-    left join CLIENTES_DESC_PRODUCTOS as cdp on  v.pre_id = cdp.pre_id and cdp.cli_id = @id and cdp.CDP_ACTIVO = 'SI'
-    left join CLIENTES_DESC_RUBROS as cdr on  p.rup_id = cdr.rup_id  and cdr.cli_id = @id and cdr.CDR_ACTIVO = 'SI'
-    WHERE dpv.LPP_ID = @lpp and v.mod_id in (${req.body.mod_id}) and p.rup_id in (${req.body.rubro})  order by p.ventas_ult6meses DESC `
+        producto.concat(
+          " ",
+          `and pd.mod_id = (${req.body.mod_id}) and p.rup_id in (${req.body.rubro}) order by p.ventas_ult6meses`
+        )
       );
+
     return res.json(result.recordset);
   }
 
@@ -475,20 +477,11 @@ export const getviewConsultmodelo = async (req, res) => {
       .input("id", sql.Int, req.params.id)
       .input("lpp", sql.Int, req.params.lpp)
       .query(
-        ` SELECT DISTINCT  v.pre_id , v.codigo, v.super_rubro, (select distinct md.mde_descripcion as motor from MOTORES_DENOMINACIONES md, VIEW_CONSULTA_DESCRIPCIONES vcd  where vcd.mde_id = md.mde_id and v.pre_id = vcd.pre_id FOR JSON PATH ) as motor, r.rup_descripcion as rubro, p.rup_id, v.marca_articulo, v.notas, v.comentarios, 
-    p.mar_id, cdm.cdm_descuento as descuento_marca, cdp.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro,
-    p.pre_stock_actual, dpv.ppa_precio, p.intercambiables, p.formado_por, p.es_parte_de,
-    (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, productos_atributos pa where pa.atr_id = a.atr_id 
-    and pa.pre_id = p.PRE_ID  FOR JSON PATH ) as atributos,
-    p.ventas_ult6meses
-    from VIEW_CONSULTA_DESCRIPCIONES as v 
-    join DETALLE_LISTA_PRECIOS_VENTA  as dpv on v.pre_id = dpv.pre_id
-    join PRODUCTOS as p on v.pre_id = p.pre_id 
-    join RUBROS as r on p.rup_id = r.rup_id
-    left join CLIENTES_DESC_PROCEDENCIAS as cdm on p.mar_id = cdm.mar_id and cdm.cli_id = 1 and cdm.CDM_ACTIVO = 'SI'
-    left join CLIENTES_DESC_PRODUCTOS as cdp on  v.pre_id = cdp.pre_id and cdp.cli_id = 1 and cdp.CDP_ACTIVO = 'SI'
-    left join CLIENTES_DESC_RUBROS as cdr on  p.rup_id = cdr.rup_id  and cdr.cli_id = 1 and cdr.CDR_ACTIVO = 'SI'
-    WHERE dpv.LPP_ID = 1 and v.mod_id in (${req.body.mod_id}) and p.rup_id in (${req.body.rubro}) and v.mde_id in (${req.body.motor}) order by p.ventas_ult6meses DESC `
+        producto.concat(
+          " ",
+          `and pd.mod_id = (${req.body.mod_id}) and p.rup_id in (${req.body.rubro})
+      and pd.mde_id in (${req.body.motor}) order by p.ventas_ult6meses`
+        )
       );
     return res.json(result.recordset);
   }
@@ -497,9 +490,9 @@ export const getviewConsultmodelo = async (req, res) => {
 /* marcasdeveiculos  */
 export const getvehiculos = async (req, res) => {
   const pool = await getConnection();
-  const result = await pool
-    .request()
-    .query("SELECT * FROM MARCAS_AUTOS WHERE MAU_ACTIVO = 'SI' ");
+  const result = await pool.request()
+    .query(`SELECT MAU_DESCRIPCION, MAU_ID FROM MARCAS_AUTOS
+    WHERE MAU_ACTIVO = 'SI' ORDER BY MAU_ORDEN,MAU_DESCRIPCION `);
   res.json(result.recordset);
 };
 
@@ -509,7 +502,7 @@ export const getvehiculosmarcaId = async (req, res) => {
   const result = await pool
     .request()
     .input("id", sql.Int, req.params.id)
-    .query("SELECT * FROM MODELOS WHERE MAU_ID = @id ");
+    .query("SELECT * FROM MODELOS WHERE MAU_ID = @id");
   return res.json(result.recordset);
 };
 
@@ -618,12 +611,20 @@ export const getrubrosMod = async (req, res) => {
 ///////////// motor segun el rubro /////
 export const getmotorRu = async (req, res) => {
   const pool = await getConnection();
-  const result = await pool.request().query(`
-    
-    select DISTINCT  me.mde_id, me.mde_descripcion  from MOTORES_DENOMINACIONES me, VIEW_CONSULTA_DESCRIPCIONES v 
-    where v.mde_id = me.mde_id and v.mod_id in (${req.body.mod_id}) and v.rup_id in (${req.body.rubro})   
-   `);
-  return res.json(result.recordset);
+  if ((req.body.mod_id, !req.body.rubro)) {
+    const result = await pool.request().query(`  
+    SELECT distinct md.mde_id, md.mde_descripcion from MOTORES_DENOMINACIONES md , 
+    PRODUCTOS_DESCRIPCIONES pd WHERE pd.MDE_ID = md.MDE_ID and pd.MOD_ID in (${req.body.mod_id})   
+     `);
+    return res.json(result.recordset);
+  } else if ((req.body.mod_id, req.body.rubro)) {
+    console.log("soy un motor");
+    const result = await pool.request().query(`  
+        select DISTINCT  me.mde_id, me.mde_descripcion  from MOTORES_DENOMINACIONES me, VIEW_CONSULTA_DESCRIPCIONES v 
+        where v.mde_id = me.mde_id and v.mod_id in (${req.body.mod_id}) and v.rup_id in (${req.body.rubro})   
+       `);
+    return res.json(result.recordset);
+  }
 };
 
 // /*prueba codigo relacion */

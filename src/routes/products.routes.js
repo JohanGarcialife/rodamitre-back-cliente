@@ -51,6 +51,8 @@ router.post("/codigo", getCodiB )
 router.post("/marcaproduct", getMarcProdut );
 ///mootor///
 router.get("/motorcar/:id", getMotorProduct);
+//////pruebaaa///////
+
 
 
 

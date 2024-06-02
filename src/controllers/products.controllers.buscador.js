@@ -33,7 +33,7 @@ export const buscador = async (req, res) => {
     mp.mar_descripcion as marca_articulo, sr.spr_descripcion as super_rubro, r.rup_descripcion as rubro, cdp.cdm_descuento as descuento_marca, 
     cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio, dlpv.lpp_id
     from PRODUCTOS p
-    left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal
+    left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal OR p.pre_codigo_fabrica = pe.codigo_equivalente
     join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
     Join SUPER_RUBROS sr on p.spr_id = sr.spr_id
     join RUBROS r on p.rup_id = r.rup_id
@@ -43,28 +43,8 @@ export const buscador = async (req, res) => {
     left join CLIENTES_DESC_RUBROS cdr on cdr.cli_id = ${req.params.id} and p.rup_id = cdr.rup_id  and cdr.cdr_activo = 'SI' 
     WHERE dlpv.lpp_id = ${req.params.lpp}`;
 
-  const e = `select distinct p.pre_id, p.pre_codigo_fabrica as codigo, p.pre_notas as notas , p.pre_stock_actual, p.intercambiables, p.formado_por, 
-    p.es_parte_de, p.ventas_ult6meses, mp.mar_descripcion as marca_articulo, sr.SPR_DESCRIPCION as super_rubro, r.rup_descripcion as rubro,
-    cdp.cdm_descuento as descuento_marca, cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro,
-    dlpv.ppa_precio, 
-    (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id 
-    and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos,
-    (select distinct ma.mau_descripcion as marca_auto, m.mod_descripcion as modelo from MARCAS_AUTOS ma, MODELOS m , PRODUCTOS_DESCRIPCIONES pd 
-    where p.pre_id = pd.pre_id and pd.mau_id = ma.mau_id and pd.mod_id = m.mod_id FOR JSON PATH ) as aplicaciones  
-    from PRODUCTOS p join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
-    Join PRODUCTOS_DESCRIPCIONES pd on p.pre_id = pd.pre_id
-    join MARCAS_AUTOS ma on pd.mau_id = ma.mau_id  
-    join MODELOS m on pd.mod_id = m.mod_id
-    Join SUPER_RUBROS sr on p.spr_id = sr.spr_id
-    join RUBROS r on p.rup_id = r.rup_id
-    join DETALLE_LISTA_PRECIOS_VENTA dlpv on dlpv.lpp_id = ${req.params.lpp} and p.pre_id = dlpv.pre_id and p.pre_activo  = 'SI'
-    left join CLIENTES_DESC_PROCEDENCIAS cdp on p.mar_id = cdp.mar_id and cdp.cli_id = ${req.params.id}  and cdp.cdm_activo = 'SI' 
-    left join CLIENTES_DESC_PRODUCTOS cdp2 on cdp2.cli_id = ${req.params.id} and cdp2.cdp_activo = 'SI' and p.pre_id = cdp2.pre_id 
-    left join CLIENTES_DESC_RUBROS cdr on cdr.cli_id= ${req.params.id} and cdr.cdr_activo = 'SI' and p.rup_id = cdr.rup_id 
-    where ma.mau_descripcion like '%${req.body.p}%' or m.mod_descripcion like '%${req.body.p}%' or p.pre_codigo_fabrica like '%${req.body.p}%'
-    or r.rup_descripcion like '%${req.body.p}%'`;
 
-  const d = `SELECT DISTINCT pre_codigo_fabrica as codigo,mar_descripcion as marca_articulo,ppa_precio FROM  MARCAS_PRODUCTOS WITH(NOLOCK) INNER JOIN
+  const d = `SELECT DISTINCT pre_codigo_fabrica as codigo,mar_descripcion as marca_articulo, pre_stock_actual, ppa_precio FROM  MARCAS_PRODUCTOS WITH(NOLOCK) INNER JOIN
  DETALLE_LISTA_PRECIOS_VENTA WITH(NOLOCK) INNER JOIN PRODUCTOS WITH(NOLOCK) ON DETALLE_LISTA_PRECIOS_VENTA.PRE_ID 
  = PRODUCTOS.PRE_ID ON MARCAS_PRODUCTOS.MAR_ID = PRODUCTOS.MAR_ID WHERE LPP_ID = ${req.params.lpp}`;
 
@@ -115,7 +95,7 @@ export const buscador = async (req, res) => {
           .query(
             d.concat(
               " ",
-              `AND PRODUCTOS.PRE_ID IN (${result.recordset[0].pre_ids_mostrar}) ORDER BY MAR_DESCRIPCION`
+              `AND PRODUCTOS.PRE_ID IN (${result.recordset[0].pre_ids_mostrar}) ORDER BY ppa_precio DESC`
             )
           );
         console.log(result);
@@ -575,3 +555,4 @@ export const buscador = async (req, res) => {
     return res.json(result.recordset);
   }
 };
+

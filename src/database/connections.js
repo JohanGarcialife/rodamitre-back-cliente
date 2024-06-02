@@ -4,7 +4,7 @@ const dbSettings = {
   user: "sa", ////este usuario es por defecto, si no te agarra a ti seguro es en minusculas
   password: "24656399", /// clave del servidor
   server: "localhost",
-  database: "RODAMITRE_WEB_ATIKA_NUEVA_dos", ////nombre de la base de datos
+  database: "RODAMITRE_WEB_ATIKA_EQUIVALENTE", ////nombre de la base de datos
   requestTimeout: 300000,
   options: {
     encrypt: true,
