@@ -25,7 +25,7 @@ export const buscador = async (req, res) => {
   WHERE dlpv.lpp_id = ${req.params.lpp} and  pe.CAMPO_BUSQUEDA  like '%${req.body.p}%'`;
 
   const c = `select distinct p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual, p.intercambiables, p.formado_por, 
-    p.es_parte_de, p.ventas_ult6meses, p.altura, p.exterior, p.interior,
+    p.es_parte_de, p.ventas_ult6meses, p.altura, p.exterior, p.interior, pe.pre_ids_mostrar,
     (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos,
     (select distinct pd.marca_modelo, (select distinct pd4.descripcion_hover as hover 
     from productos_descripciones pd4 where pd.marca_modelo = pd4.marca_modelo and pd4.pre_id= p.pre_id FOR JSON PATH) as hover 
