@@ -1,4 +1,3 @@
-import { query } from "express";
 import sql from "mssql";
 import { getConnection } from "../database/connections.js";
 
@@ -43,7 +42,6 @@ export const buscador = async (req, res) => {
     left join CLIENTES_DESC_RUBROS cdr on cdr.cli_id = ${req.params.id} and p.rup_id = cdr.rup_id  and cdr.cdr_activo = 'SI' 
     WHERE dlpv.lpp_id = ${req.params.lpp}`;
 
-
   const d = `SELECT DISTINCT pre_codigo_fabrica as codigo,mar_descripcion as marca_articulo, pre_stock_actual, ppa_precio FROM  MARCAS_PRODUCTOS WITH(NOLOCK) INNER JOIN
  DETALLE_LISTA_PRECIOS_VENTA WITH(NOLOCK) INNER JOIN PRODUCTOS WITH(NOLOCK) ON DETALLE_LISTA_PRECIOS_VENTA.PRE_ID 
  = PRODUCTOS.PRE_ID ON MARCAS_PRODUCTOS.MAR_ID = PRODUCTOS.MAR_ID WHERE LPP_ID = ${req.params.lpp}`;
@@ -67,8 +65,7 @@ export const buscador = async (req, res) => {
     ? parseInt(req.body.interior) - 0.5
     : req.body.interior;
 
-
-    console.log(req.body)
+  console.log(req.body);
 
   if (req.body.p) {
     if (
@@ -125,7 +122,7 @@ export const buscador = async (req, res) => {
         );
 
       if (result.recordset.length <= 0) {
-        console.log("hola buscamos todo ahora");
+        // console.log("hola buscamos todo ahora");
 
         const productos = await pool
           .request()
@@ -133,7 +130,7 @@ export const buscador = async (req, res) => {
         return res.json(productos.recordset);
       }
 
-      console.log(result.recordset, "valor");
+      //  console.log(result.recordset, "valor");
 
       if (result.recordset && result?.recordset[0]?.pre_ids_mostrar) {
         const equivalente = await pool
@@ -171,9 +168,9 @@ export const buscador = async (req, res) => {
           )
         );
       if (result.recordset.length <= 0) {
-        console.log("hola buscamos todo ahora");
-        console.log("todo + altura");
-        console.log(req.body.p, en, ep);
+        // console.log("hola buscamos todo ahora");
+        // console.log("todo + altura");
+        // console.log(req.body.p, en, ep);
 
         const productos = await pool
           .request()
@@ -206,8 +203,8 @@ export const buscador = async (req, res) => {
       !req.body.exterior &&
       !req.body.interior
     ) {
-      console.log("producto + altura");
-      console.log(req.body.p, an, ap);
+      //   console.log("producto + altura");
+      //   console.log(req.body.p, an, ap);
       const result = await pool
         .request()
         .query(
@@ -216,10 +213,10 @@ export const buscador = async (req, res) => {
             `and p.pre_codigo_fabrica ='${req.body.p}' and p.altura BETWEEN '${an}' and '${ap}'`
           )
         );
-      console.log(query);
+      //   console.log(query);
 
       if (result.recordset.length <= 0) {
-        console.log("hola buscamos todo ahora");
+        //   console.log("hola buscamos todo ahora");
 
         const productos = await pool
           .request()
@@ -440,7 +437,7 @@ export const buscador = async (req, res) => {
     !req.body.exterior &&
     req.body.interior
   ) {
-    console.log("estoy buscando aqui solo interior")
+    console.log("estoy buscando aqui solo interior");
     const result = await pool.request().query(
       c.concat(
         " ",
@@ -556,4 +553,3 @@ export const buscador = async (req, res) => {
     return res.json(result.recordset);
   }
 };
-
