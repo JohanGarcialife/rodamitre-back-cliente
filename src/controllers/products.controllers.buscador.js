@@ -3,25 +3,40 @@ import { getConnection } from "../database/connections.js";
 
 export const buscador = async (req, res) => {
   const pool = await getConnection();
+  const h = req.body.p.trim();
+  const busqv = h.split(" ");
+  console.log(busqv);
+  
 
-  const b = `select distinct p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual, p.intercambiables, p.formado_por, 
-  p.es_parte_de, p.ventas_ult6meses, p.altura, p.exterior, p.interior , p.ventas_ult6meses,
-  (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos,
-  (select distinct pd.marca_modelo, (select distinct pd4.descripcion_hover as hover 
-   from productos_descripciones pd4 where pd.marca_modelo = pd4.marca_modelo and pd4.pre_id= p.pre_id FOR JSON PATH) as hover 
-  from productos_descripciones pd where p.pre_id = pd.pre_id FOR JSON PATH ) as aplicaciones,
-  mp.mar_descripcion as marca_articulo, sr.spr_descripcion as super_rubro, r.rup_descripcion as rubro, cdp.cdm_descuento as descuento_marca, 
-  cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio
-  from PRODUCTOS p 
-  left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal
-  join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
-  Join SUPER_RUBROS sr on p.spr_id = sr.spr_id
-  join RUBROS r on p.rup_id = r.rup_id
-  join DETALLE_LISTA_PRECIOS_VENTA dlpv on p.pre_id = dlpv.pre_id and p.pre_activo  = 'SI'
-  left join CLIENTES_DESC_PROCEDENCIAS cdp on cdp.cli_id = ${req.params.id} and p.mar_id = cdp.mar_id and cdp.cdm_activo = 'SI' 
-  left join CLIENTES_DESC_PRODUCTOS cdp2 on cdp2.cli_id = ${req.params.id} and p.pre_id = cdp2.pre_id and cdp2.cdp_activo = 'SI'  
-  left join CLIENTES_DESC_RUBROS cdr on cdr.cli_id = ${req.params.id} and p.rup_id = cdr.rup_id  and cdr.cdr_activo = 'SI' 
-  WHERE dlpv.lpp_id = ${req.params.lpp} and  pe.CAMPO_BUSQUEDA  like '%${req.body.p}%'`;
+  const concatenar =
+    busqv.length === 1
+      ? `and pe.CAMPO_BUSQUEDA  like '%${busqv[0]}%'`
+      : busqv.length === 2
+      ? `and pe.CAMPO_BUSQUEDA like '%${busqv[0]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[1]}%'`
+      : busqv.length === 3
+      ? `and pe.CAMPO_BUSQUEDA like '%${busqv[0]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[1]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[2]}%'`
+      : `and pe.CAMPO_BUSQUEDA like '%${busqv[0]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[1]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[2]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[3]}%'`;
+
+  const a = `select distinct p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual, p.intercambiables, p.formado_por, 
+      p.es_parte_de, p.ventas_ult6meses, p.altura, p.exterior, p.interior , p.ventas_ult6meses,
+      (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos,
+      (select distinct pd.marca_modelo, (select distinct pd4.descripcion_hover as hover 
+       from productos_descripciones pd4 where pd.marca_modelo = pd4.marca_modelo and pd4.pre_id= p.pre_id FOR JSON PATH) as hover 
+      from productos_descripciones pd where p.pre_id = pd.pre_id FOR JSON PATH ) as aplicaciones,
+      mp.mar_descripcion as marca_articulo, sr.spr_descripcion as super_rubro, r.rup_descripcion as rubro, cdp.cdm_descuento as descuento_marca, 
+      cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio
+      from PRODUCTOS p 
+      left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal
+      join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
+      Join SUPER_RUBROS sr on p.spr_id = sr.spr_id
+      join RUBROS r on p.rup_id = r.rup_id
+      join DETALLE_LISTA_PRECIOS_VENTA dlpv on p.pre_id = dlpv.pre_id and p.pre_activo  = 'SI'
+      left join CLIENTES_DESC_PROCEDENCIAS cdp on cdp.cli_id = ${req.params.id} and p.mar_id = cdp.mar_id and cdp.cdm_activo = 'SI' 
+      left join CLIENTES_DESC_PRODUCTOS cdp2 on cdp2.cli_id = ${req.params.id} and p.pre_id = cdp2.pre_id and cdp2.cdp_activo = 'SI'  
+      left join CLIENTES_DESC_RUBROS cdr on cdr.cli_id = ${req.params.id} and p.rup_id = cdr.rup_id  and cdr.cdr_activo = 'SI' 
+      WHERE dlpv.lpp_id = ${req.params.lpp}`;
+
+  const b = a.concat(" ", concatenar);
 
   const c = `select distinct p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual, p.intercambiables, p.formado_por, 
     p.es_parte_de, p.ventas_ult6meses, p.altura, p.exterior, p.interior, pe.pre_ids_mostrar,
@@ -65,8 +80,6 @@ export const buscador = async (req, res) => {
     ? parseInt(req.body.interior) - 0.5
     : req.body.interior;
 
-  console.log(req.body);
-
   if (req.body.p) {
     if (
       req.body.p &&
@@ -84,7 +97,6 @@ export const buscador = async (req, res) => {
 
         const productos = await pool.request().query(b);
 
-        console.log(productos.recordset);
         return res.json(productos.recordset);
       } else if (result.recordset && result?.recordset[0]?.pre_ids_mostrar) {
         const equivalente = await pool
@@ -95,9 +107,7 @@ export const buscador = async (req, res) => {
               `AND PRODUCTOS.PRE_ID IN (${result.recordset[0].pre_ids_mostrar}) ORDER BY ppa_precio DESC`
             )
           );
-        console.log(result);
 
-        console.log([result.recordset, equivalente.recordset]);
         return res.json([{ m: result.recordset }, equivalente.recordset]);
       }
       if (result.recordset && !result?.recordset[0]?.pre_ids_mostrar) {
