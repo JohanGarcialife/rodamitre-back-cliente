@@ -52,13 +52,5 @@ router.post("/marcaproduct", getMarcProdut);
 router.get("/motorcar/:id", getMotorProduct);
 //////pruebaaa///////
 
-////////////////////////////////////////////////
-//router.get("/atributos", atributos);////////
-/*buscador familias*/
-/* view consulta todos los vehiculos */
-/*view consulta todas las marcas*/
-/*consulta todos los modelos*/
-/*view consulta todos super rubros*/
-/*consulta todos los rubros*/
 
 export default router;
