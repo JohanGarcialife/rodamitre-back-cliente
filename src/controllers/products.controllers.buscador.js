@@ -17,7 +17,7 @@ export const buscador = async (req, res) => {
       ? `and pe.CAMPO_BUSQUEDA like '%${busqv[0]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[1]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[2]}%'`
       : `and pe.CAMPO_BUSQUEDA like '%${busqv[0]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[1]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[2]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[3]}%'`;
 
-  const a = `select distinct p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual, p.intercambiables, p.formado_por, 
+  const a = `select distinct p.pre_id, p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual, p.intercambiables, p.formado_por, 
       p.es_parte_de, p.ventas_ult6meses, p.altura, p.exterior, p.interior , p.ventas_ult6meses,
       (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos,
       (select distinct pd.marca_modelo, (select distinct pd4.descripcion_hover as hover 
@@ -38,7 +38,7 @@ export const buscador = async (req, res) => {
 
   const b = a.concat(" ", concatenar);
 
-  const c = `select distinct p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual, p.intercambiables, p.formado_por, 
+  const c = `select distinct p.pre_id, p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual, p.intercambiables, p.formado_por, 
     p.es_parte_de, p.ventas_ult6meses, p.altura, p.exterior, p.interior, pe.pre_ids_mostrar,
     (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos,
     (select distinct pd.marca_modelo, (select distinct pd4.descripcion_hover as hover 

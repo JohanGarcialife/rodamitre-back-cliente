@@ -250,7 +250,7 @@ export const getviewConsultAuto = async (req, res) => {
 export const getviewConsultmodelo = async (req, res) => {
   const pool = await getConnection();
  
-  const producto = `select distinct p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual,p.ventas_ult6meses, 
+  const producto = `select distinct p.pre_id, p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual,p.ventas_ult6meses, 
   (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id 
   and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos, mp.mar_descripcion as marca_articulo, r.rup_descripcion as rubro, p.rup_id,
   cdp.cdm_descuento as descuento_marca,cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio, 
@@ -272,7 +272,7 @@ export const getviewConsultmodelo = async (req, res) => {
   left join CLIENTES_DESC_RUBROS cdr on cdr.cli_id = ${req.params.id} and p.rup_id = cdr.rup_id  and cdr.cdr_activo = 'SI' 
   WHERE dlpv.lpp_id = ${req.params.lpp}   
   `;
-  const productoM = `select distinct p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual,p.ventas_ult6meses, 
+  const productoM = `select distinct p.pre_id, p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual,p.ventas_ult6meses, 
   (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id 
   and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos, mp.mar_descripcion as marca_articulo, r.rup_descripcion as rubro, p.rup_id,
   cdp.cdm_descuento as descuento_marca,cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio, 
