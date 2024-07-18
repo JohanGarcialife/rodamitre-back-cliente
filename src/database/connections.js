@@ -2,8 +2,8 @@ import sql from 'mssql'
 
 const dbSettings = {
     user: "luis", ////este usuario es por defecto, si no te agarra a ti seguro es en minusculas
-    password:"Luis1234", /// clave del servidor 
-    server:"10.0.0.102",
+    password:"Luis12345", /// clave del servidor 
+    server:"10.0.0.106",
     database: "RODAMITRE_WEB_ATIKA",////nombre de la base de datos
     requestTimeout: 300000,
     options: {

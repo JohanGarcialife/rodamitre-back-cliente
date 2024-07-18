@@ -7,7 +7,7 @@ export const buscador = async (req, res) => {
   const busqv = h.split(" ");
   console.log(busqv);
   
-
+ 
   const concatenar =
     busqv.length === 1
       ? `and pe.CAMPO_BUSQUEDA  like '%${busqv[0]}%'`
@@ -18,15 +18,15 @@ export const buscador = async (req, res) => {
       : `and pe.CAMPO_BUSQUEDA like '%${busqv[0]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[1]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[2]}%' and pe.CAMPO_BUSQUEDA like '%${busqv[3]}%'`;
 
   const a = `select distinct p.pre_id, p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual, p.intercambiables, p.formado_por, 
-      p.es_parte_de, p.ventas_ult6meses, p.altura, p.exterior, p.interior , p.ventas_ult6meses,
+      p.es_parte_de, p.ventas_ult6meses, p.altura, p.exterior, p.interior , 
       (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos,
       (select distinct pd.marca_modelo, (select distinct pd4.descripcion_hover as hover 
        from productos_descripciones pd4 where pd.marca_modelo = pd4.marca_modelo and pd4.pre_id= p.pre_id FOR JSON PATH) as hover 
       from productos_descripciones pd where p.pre_id = pd.pre_id FOR JSON PATH ) as aplicaciones,
       mp.mar_descripcion as marca_articulo, sr.spr_descripcion as super_rubro, r.rup_descripcion as rubro, cdp.cdm_descuento as descuento_marca, 
       cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio
-      from PRODUCTOS p 
-      left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal
+      from PRODUCTOS p
+      left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal or p.pre_id = pe.pre_id_equivalente 
       join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
       Join SUPER_RUBROS sr on p.spr_id = sr.spr_id
       join RUBROS r on p.rup_id = r.rup_id
@@ -45,9 +45,9 @@ export const buscador = async (req, res) => {
     from productos_descripciones pd4 where pd.marca_modelo = pd4.marca_modelo and pd4.pre_id= p.pre_id FOR JSON PATH) as hover 
     from productos_descripciones pd where p.pre_id = pd.pre_id FOR JSON PATH ) as aplicaciones,
     mp.mar_descripcion as marca_articulo, sr.spr_descripcion as super_rubro, r.rup_descripcion as rubro, cdp.cdm_descuento as descuento_marca, 
-    cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio, dlpv.lpp_id
+    cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio, dlpv.lpp_id, pe.codigo_principal, pe.pre_id_principal
     from PRODUCTOS p
-    left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal or p.pre_codigo_fabrica = pe.codigo_equivalente
+    left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal or p.pre_id = pe.pre_id_equivalente
     join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
     Join SUPER_RUBROS sr on p.spr_id = sr.spr_id
     join RUBROS r on p.rup_id = r.rup_id
@@ -57,9 +57,17 @@ export const buscador = async (req, res) => {
     left join CLIENTES_DESC_RUBROS cdr on cdr.cli_id = ${req.params.id} and p.rup_id = cdr.rup_id  and cdr.cdr_activo = 'SI' 
     WHERE dlpv.lpp_id = ${req.params.lpp}`;
 
-  const d = `SELECT DISTINCT pre_codigo_fabrica as codigo,mar_descripcion as marca_articulo, pre_stock_actual, ppa_precio FROM  MARCAS_PRODUCTOS WITH(NOLOCK) INNER JOIN
- DETALLE_LISTA_PRECIOS_VENTA WITH(NOLOCK) INNER JOIN PRODUCTOS WITH(NOLOCK) ON DETALLE_LISTA_PRECIOS_VENTA.PRE_ID 
- = PRODUCTOS.PRE_ID ON MARCAS_PRODUCTOS.MAR_ID = PRODUCTOS.MAR_ID WHERE LPP_ID = ${req.params.lpp}`;
+  const d = `SELECT DISTINCT productos.pre_id, pre_codigo_fabrica as codigo,mar_descripcion as marca_articulo, pre_stock_actual,
+  ppa_precio, pe.codigo_principal, pe.pre_id_principal FROM  MARCAS_PRODUCTOS WITH(NOLOCK) INNER JOIN DETALLE_LISTA_PRECIOS_VENTA 
+  WITH(NOLOCK) INNER JOIN PRODUCTOS WITH(NOLOCK) ON DETALLE_LISTA_PRECIOS_VENTA.PRE_ID = PRODUCTOS.PRE_ID 
+  ON MARCAS_PRODUCTOS.MAR_ID = PRODUCTOS.MAR_ID left join PRODUCTOS_EQUIVALENCIAS pe on PRODUCTOS.PRE_ID = pe.pre_id_principal or
+  PRODUCTOS.PRE_ID = pe.pre_id_equivalente
+  WHERE LPP_ID = ${req.params.lpp}`;
+
+/* const e = `
+SELECT DISTINCT p.pre_id, pe.codigo_principal, pe.pre_ids_mostrar FROM productos p
+left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal or p.pre_id = pe.pre_id_equivalente WHERE 
+p.pre_codigo_fabrica = '${req.body.p}'` */
 
   const ap = req.body.altura
     ? parseFloat(req.body.altura) + 0.5
@@ -90,7 +98,7 @@ export const buscador = async (req, res) => {
       console.log(req.body);
       const result = await pool
         .request()
-        .query(c.concat(" ", `and p.pre_codigo_fabrica = '${req.body.p}'`));
+       .query(c.concat(" ", `and p.pre_codigo_fabrica = '${req.body.p}' ORDER BY ppa_precio DESC `));
       //////////////////////////////////////////////////////////////////////////////
       if (result.recordset.length <= 0) {
         console.log("hola buscamos todo ahora");
@@ -108,7 +116,12 @@ export const buscador = async (req, res) => {
             )
           );
 
-        return res.json([{ m: result.recordset }, equivalente.recordset]);
+          const idsNoPermitidos = result.recordset.map(doc => doc.pre_id);
+          const datosFiltrados = equivalente.recordset.filter(doc => !idsNoPermitidos.includes(doc.pre_id))
+          var prueba = result.recordset.concat(datosFiltrados);
+          prueba.sort(function(a,b){ return a.ppa_precio < b.ppa_precio?1:-1 });          
+         return res.json(prueba)
+
       }
       if (result.recordset && !result?.recordset[0]?.pre_ids_mostrar) {
         return res.json(result.recordset);
@@ -152,7 +165,13 @@ export const buscador = async (req, res) => {
             )
           );
 
-        return res.json([{ m: result.recordset }, equivalente.recordset]);
+          const idsNoPermitidos = result.recordset.map(doc => doc.pre_id);
+          const datosFiltrados = equivalente.recordset.filter(doc => !idsNoPermitidos.includes(doc.pre_id))
+          var prueba = result.recordset.concat(datosFiltrados);
+          prueba.sort(function(a,b){ return a.ppa_precio < b.ppa_precio?1:-1 });          
+         return res.json(prueba)
+
+       // return res.json([{ m: result.recordset }, equivalente.recordset]);
       }
       if (result.recordset && !result?.recordset[0]?.pre_ids_mostrar) {
         return res.json(result.recordset);
@@ -198,7 +217,14 @@ export const buscador = async (req, res) => {
             )
           );
 
-        return res.json([{ m: result.recordset }, equivalente.recordset]);
+          const idsNoPermitidos = result.recordset.map(doc => doc.pre_id);
+          const datosFiltrados = equivalente.recordset.filter(doc => !idsNoPermitidos.includes(doc.pre_id))
+          var prueba = result.recordset.concat(datosFiltrados);
+          prueba.sort(function(a,b){ return a.ppa_precio < b.ppa_precio?1:-1 });          
+         return res.json(prueba)
+          
+
+       /// return res.json([{ m: result.recordset }, equivalente.recordset]);
       }
       if (result.recordset && !result?.recordset[0]?.pre_ids_mostrar) {
         return res.json(result.recordset);
@@ -244,7 +270,13 @@ export const buscador = async (req, res) => {
             )
           );
 
-        return res.json([{ m: result.recordset }, equivalente.recordset]);
+          const idsNoPermitidos = result.recordset.map(doc => doc.pre_id);
+          const datosFiltrados = equivalente.recordset.filter(doc => !idsNoPermitidos.includes(doc.pre_id))
+          var prueba = result.recordset.concat(datosFiltrados);
+          prueba.sort(function(a,b){ return a.ppa_precio < b.ppa_precio?1:-1 });          
+         return res.json(prueba)
+
+        //return res.json([{ m: result.recordset }, equivalente.recordset]);
       }
       if (result.recordset && !result?.recordset[0]?.pre_ids_mostrar) {
         return res.json(result.recordset);
@@ -291,8 +323,13 @@ export const buscador = async (req, res) => {
               `AND PRODUCTOS.PRE_ID IN (${result.recordset[0].pre_ids_mostrar}) ORDER BY MAR_DESCRIPCION`
             )
           );
+          const idsNoPermitidos = result.recordset.map(doc => doc.pre_id);
+          const datosFiltrados = equivalente.recordset.filter(doc => !idsNoPermitidos.includes(doc.pre_id))
+          var prueba = result.recordset.concat(datosFiltrados);
+          prueba.sort(function(a,b){ return a.ppa_precio < b.ppa_precio?1:-1 });          
+         return res.json(prueba)
 
-        return res.json([{ m: result.recordset }, equivalente.recordset]);
+        //return res.json([{ m: result.recordset }, equivalente.recordset]);
       }
       if (result.recordset && !result?.recordset[0]?.pre_ids_mostrar) {
         return res.json(result.recordset);
@@ -339,7 +376,12 @@ export const buscador = async (req, res) => {
             )
           );
 
-        return res.json([{ m: result.recordset }, equivalente.recordset]);
+          const idsNoPermitidos = result.recordset.map(doc => doc.pre_id);
+          const datosFiltrados = equivalente.recordset.filter(doc => !idsNoPermitidos.includes(doc.pre_id))
+          var prueba = result.recordset.concat(datosFiltrados);
+          prueba.sort(function(a,b){ return a.ppa_precio < b.ppa_precio?1:-1 });          
+         return res.json(prueba)
+        //return res.json([{ m: result.recordset }, equivalente.recordset]);
       }
       if (result.recordset && !result?.recordset[0]?.pre_ids_mostrar) {
         return res.json(result.recordset);
@@ -384,8 +426,14 @@ export const buscador = async (req, res) => {
               `AND PRODUCTOS.PRE_ID IN (${result.recordset[0].pre_ids_mostrar}) ORDER BY MAR_DESCRIPCION`
             )
           );
+          const idsNoPermitidos = result.recordset.map(doc => doc.pre_id);
+          const datosFiltrados = equivalente.recordset.filter(doc => !idsNoPermitidos.includes(doc.pre_id))
+          var prueba = result.recordset.concat(datosFiltrados);
+          prueba.sort(function(a,b){ return a.ppa_precio < b.ppa_precio?1:-1 });          
+         return res.json(prueba)
 
-        return res.json([{ m: result.recordset }, equivalente.recordset]);
+
+       // return res.json([{ m: result.recordset }, equivalente.recordset]);
       }
       if (result.recordset && !result?.recordset[0]?.pre_ids_mostrar) {
         return res.json(result.recordset);
@@ -430,8 +478,13 @@ export const buscador = async (req, res) => {
               `AND PRODUCTOS.PRE_ID IN (${result.recordset[0].pre_ids_mostrar}) ORDER BY MAR_DESCRIPCION`
             )
           );
+          const idsNoPermitidos = result.recordset.map(doc => doc.pre_id);
+          const datosFiltrados = equivalente.recordset.filter(doc => !idsNoPermitidos.includes(doc.pre_id))
+          var prueba = result.recordset.concat(datosFiltrados);
+          prueba.sort(function(a,b){ return a.ppa_precio < b.ppa_precio?1:-1 });          
+         return res.json(prueba)
 
-        return res.json([{ m: result.recordset }, equivalente.recordset]);
+        //return res.json([{ m: result.recordset }, equivalente.recordset]);
       }
       if (result.recordset && !result?.recordset[0]?.pre_ids_mostrar) {
         return res.json(result.recordset);
@@ -562,4 +615,25 @@ export const buscador = async (req, res) => {
 
     return res.json(result.recordset);
   }
+};
+
+
+export const prueba246 = async (req, res) => {
+ 
+  const pool = await getConnection();
+  const p = `SELECT DISTINCT p.pre_id, pe.codigo_principal, pe.pre_ids_mostrar FROM productos p
+  left join PRODUCTOS_EQUIVALENCIAS pe on p.pre_id = pe.pre_id_principal or p.pre_id = pe.pre_id_equivalente 
+  WHERE p.pre_codigo_fabrica = '${req.body.p}'`;
+
+  const result = await pool.request()
+    .query(p);
+
+var a = result.recordset?.map(function (o) {
+  var p = o.pre_ids_mostrar;
+  return p;
+});
+ var str = a.toString()
+ console.log(str)
+
+  return res.json(a);
 };
