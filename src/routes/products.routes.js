@@ -17,7 +17,7 @@ import {
   //atributos
 } from "../controllers/products.controllers.js";
 
-import { buscador } from "../controllers/products.controllers.buscador.js";
+import { buscador, prueba246 } from "../controllers/products.controllers.buscador.js";
 
 const router = Router();
 
@@ -44,6 +44,8 @@ router.post("/rubromod", getrubrosMod);
 router.post("/motorud", getmotorRu);
 ///////busqueda por cogigo//////////
 router.post("/buscador/:id/:lpp", buscador); //
+router.post("/prue/:id/:lpp", prueba246); //
+
 ////codigo
 router.post("/codigo", getCodiB);
 ////// marca codigo
@@ -52,4 +54,4 @@ router.post("/marcaproduct", getMarcProdut);
 router.get("/motorcar/:id", getMotorProduct);
 
 
-export default router;
+export default router; 
