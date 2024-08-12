@@ -1,4 +1,4 @@
-import sql from 'mssql'
+import sql from "mssql";
 
 const dbSettings = {
     user: "luis", ////este usuario es por defecto, si no te agarra a ti seguro es en minusculas
@@ -14,11 +14,10 @@ const dbSettings = {
 
 
 export const getConnection = async () => {
-    try { 
-const pool = await sql.connect(dbSettings)
+  try {
+    const pool = await sql.connect(dbSettings);
     return pool;
-    } catch (error){
-        console.log(error)
-    }   
-}
-
+  } catch (error) {
+    console.log(error);
+  }
+};

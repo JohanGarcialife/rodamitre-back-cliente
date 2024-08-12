@@ -1,5 +1,5 @@
-import app from "./app.js"
+import app from "./app.js";
 
-app.listen(5000)
+app.listen(5000);
 
-console.log("servidor iniciado") 
+console.log("servidor iniciado");
