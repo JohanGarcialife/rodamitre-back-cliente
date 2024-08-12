@@ -3,7 +3,6 @@ import { getConnection } from "../database/connections.js";
 
 /* productos id por cliente */
 export const geproductosId = async (req, res) => {
- 
   const pool = await getConnection();
   const result = await pool
     .request()
@@ -168,8 +167,6 @@ export const getviewConsultAuto = async (req, res) => {
     !req.body.rubro &&
     !req.body.mar_id
   ) {
-    
-
     const result = await pool
       .request()
       .query(
@@ -249,7 +246,7 @@ export const getviewConsultAuto = async (req, res) => {
 
 export const getviewConsultmodelo = async (req, res) => {
   const pool = await getConnection();
- 
+
   const producto = `select distinct p.pre_id, p.pre_codigo_fabrica as codigo, p.pre_notas as notas, p.pre_stock_actual,p.ventas_ult6meses, 
   (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id 
   and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos, mp.mar_descripcion as marca_articulo, r.rup_descripcion as rubro, p.rup_id,
@@ -322,7 +319,6 @@ export const getviewConsultmodelo = async (req, res) => {
   }
 
   if (req.body.mod_id && req.body.rubro && req.body.motor && !req.body.eje) {
-    
     const result = await pool.request().query(
       productoM.concat(
         " ",
@@ -334,7 +330,6 @@ export const getviewConsultmodelo = async (req, res) => {
   }
 
   if (req.body.mod_id && !req.body.rubro && req.body.motor && !req.body.eje) {
-    
     const result = await pool
       .request()
       .query(
@@ -346,10 +341,9 @@ export const getviewConsultmodelo = async (req, res) => {
     return res.json(result.recordset);
   }
   if (req.body.mod_id && req.body.rubro && req.body.eje) {
+    console.log("entre aqui");
+    console.log(req.body);
 
-    console.log("entre aqui")
-    console.log (req.body)
-    
     const result = await pool
       .request()
       .query(
@@ -366,7 +360,6 @@ export const getviewConsultmodelo = async (req, res) => {
 
 /* marcasdeveiculos  */
 export const getvehiculos = async (req, res) => {
-  
   const pool = await getConnection();
   const result = await pool.request()
     .query(`SELECT MAU_DESCRIPCION, MAU_ID FROM MARCAS_AUTOS
@@ -386,19 +379,15 @@ export const getvehiculosmarcaId = async (req, res) => {
 
 /*Super rubros todos y segun la marca del auto */
 export const getrubrosId = async (req, res) => {
- 
   const pool = await getConnection();
 
   if (req.body.mau_id) {
-  
-   
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.super_rubro, p.spr_id  from VIEW_CONSULTA_DESCRIPCIONES as v
     join PRODUCTOS as p on v.pre_id = p.pre_id
     where  mau_id in (${req.body.mau_id}) order by v.super_rubro asc`);
     return res.json(result.recordset);
   } else {
-   
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.super_rubro, p.spr_id  from VIEW_CONSULTA_DESCRIPCIONES as v
     join PRODUCTOS as p on v.pre_id = p.pre_id order by v.super_rubro asc
@@ -410,31 +399,26 @@ export const getrubrosId = async (req, res) => {
 /*Super todas las marcas y segun el rubro */
 export const getmarcaArticulo = async (req, res) => {
   const pool = await getConnection();
-  
 
   if (!req.body?.mau_id && !req.body.rud_id && !req.body.rubro) {
-   
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.marca_articulo as marca_a , p.mar_id  from VIEW_CONSULTA_DESCRIPCIONES as v 
     join PRODUCTOS as p on v.pre_id = p.pre_id order by v.marca_articulo asc`);
     return res.json(result.recordset);
   }
   if (req.body?.mau_id && !req.body.rud_id && !req.body.rubro) {
-   
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.marca_articulo as marca_a , p.mar_id  from VIEW_CONSULTA_DESCRIPCIONES as v 
     join PRODUCTOS as p on v.pre_id = p.pre_id  where v.mau_id in (${req.body.mau_id}) order by v.marca_articulo asc `);
     return res.json(result.recordset);
   }
   if (req.body.rud_id && !req.body.mau_id && !req.body.rubro) {
-    
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.marca_articulo as marca_a , p.mar_id  from VIEW_CONSULTA_DESCRIPCIONES as v 
     join PRODUCTOS as p on v.pre_id = p.pre_id  where p.spr_id in (${req.body.rud_id}) order by v.marca_articulo asc `);
     return res.json(result.recordset);
   }
   if (req.body.rud_id && req.body.mau_id && !req.body.rubro) {
-    
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.marca_articulo as marca_a , p.mar_id  from VIEW_CONSULTA_DESCRIPCIONES as v 
     join PRODUCTOS as p on v.pre_id = p.pre_id  where v.mau_id in (${req.body.mau_id}) and p.spr_id in (${req.body.rud_id}) order by v.marca_articulo asc `);
@@ -442,16 +426,12 @@ export const getmarcaArticulo = async (req, res) => {
   }
 
   if (req.body.rud_id && !req.body.mau_id && req.body.rubro) {
-   
-
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.marca_articulo as marca_a , p.mar_id  from VIEW_CONSULTA_DESCRIPCIONES as v 
     join PRODUCTOS as p on v.pre_id = p.pre_id  where p.spr_id in (${req.body.rud_id}) and v.rubro in ('${req.body.rubro}') `);
     return res.json(result.recordset);
   }
   if (req.body.mau_id && req.body.rud_id && req.body.rubro) {
-    
-
     const result = await pool.request()
       .query(`SELECT  DISTINCT  v.marca_articulo as marca_a , p.mar_id  from VIEW_CONSULTA_DESCRIPCIONES as v 
     join PRODUCTOS as p on v.pre_id = p.pre_id  where  v.mau_id in (${req.body.mau_id}) and p.spr_id in (${req.body.rud_id}) and v.rubro in ('${req.body.rubro}') `);
@@ -512,7 +492,6 @@ export const getmotorRu = async (req, res) => {
      `);
     return res.json(result.recordset);
   } else if ((req.body.mod_id, req.body.rubro)) {
-    
     const result = await pool.request().query(`  
         select DISTINCT  me.mde_id, me.mde_descripcion  from MOTORES_DENOMINACIONES me, VIEW_CONSULTA_DESCRIPCIONES v 
         where v.mde_id = me.mde_id and v.mod_id in (${req.body.mod_id}) and v.rup_id in (${req.body.rubro})   
@@ -527,9 +506,8 @@ export const getmotorRu = async (req, res) => {
 export const getCodiB = async (req, res) => {
   const pool = await getConnection();
   const result = await pool.request().query(`
-  SELECT DISTINCT TOP 10 CODIGO FROM VIEW_CONSULTA_DESCRIPCIONES vcd 
-    WITH(NOLOCK) WHERE CODIGO LIKE '${req.body.p}%' ORDER  BY CODIGO    
-    `);
+  SELECT DISTINCT TOP 10 CODIGO_EQUIVALENTE as CODIGO FROM CODIGOS_EQUIVALENTES WITH(NOLOCK) 
+  WHERE CODIGO_EQUIVALENTE LIKE '${req.body.p}%' ORDER  BY CODIGO_EQUIVALENTE `);
   return res.json(result.recordset);
 };
 ////// marca segun el producto///
@@ -542,7 +520,6 @@ where codigo = '${req.body.p}'`);
 };
 
 export const getMotorProduct = async (req, res) => {
-  
   const pool = await getConnection();
   const result = await pool.request().input("id", sql.Int, req.params.id)
     .query(`select distinct m.mde_descripcion from motores_denominaciones as m  

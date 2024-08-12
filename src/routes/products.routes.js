@@ -17,7 +17,7 @@ import {
   //atributos
 } from "../controllers/products.controllers.js";
 
-import { buscador, prueba246 } from "../controllers/products.controllers.buscador.js";
+import {   buscar  } from "../controllers/products.controllers.buscador.js";
 
 const router = Router();
 
@@ -43,8 +43,8 @@ router.post("/rubromod", getrubrosMod);
 //////// motor segun su rubro /////////
 router.post("/motorud", getmotorRu);
 ///////busqueda por cogigo//////////
-router.post("/buscador/:id/:lpp", buscador); //
-router.post("/prue/:id/:lpp", prueba246); //
+router.post("/buscador/:id/:lpp", buscar); //
+//router.post("/prue/:id/:lpp", prueba246); //
 
 ////codigo
 router.post("/codigo", getCodiB);
