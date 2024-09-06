@@ -32,15 +32,15 @@ export const buscar = async (req, res) => {
 
   const pro = `codigo_principal like '%${req.body.p}%'`;
   const p = `select DISTINCT al.pre_id_principal,al.codigo_principal,(select distinct ps.codigo_equivalente, 
-  ps.pre_id_equivalente, ps.pre_id_principal  from PRODUCTOS_EQUIVALENCIAS ps where  CODIGO_EQUIVALENTE ='${req.body.p}' 
+  ps.pre_id_equivalente, ps.pre_id_principal, ps.marca from PRODUCTOS_EQUIVALENCIAS ps where  CODIGO_EQUIVALENTE ='${req.body.p}' 
   and al.PRE_ID_PRINCIPAL = ps.pre_id_principal FOR JSON PATH) as comparar from PRODUCTOS_EQUIVALENCIAS al where`;
   const b = p.concat(" ", concatenar);
   const c = p.concat(" ", pro);
   const h = ` 
     select p.pre_id, r.rup_descripcion as rubro, p.pre_notas as notas,(select distinct p2.pre_codigo_fabrica as codigo, p2.formado_por, p2.es_parte_de,
-    p2.intercambiables, pe.pre_id_principal,pe.pre_id_equivalente,mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, 
-    p2.pre_stock_actual from PRODUCTOS_EQUIVALENCIAS pe, PRODUCTOS p2, MARCAS_PRODUCTOS mp2, DETALLE_LISTA_PRECIOS_VENTA dpv2 
-    where pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.mar_id = mp2.mar_id 
+    p2.intercambiables, p2.companieros, pe.pre_id_principal,pe.pre_id_equivalente,mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, 
+    p2.pre_stock_actual, i.pre_imagenes from PRODUCTOS_EQUIVALENCIAS pe, PRODUCTOS p2, MARCAS_PRODUCTOS mp2, DETALLE_LISTA_PRECIOS_VENTA dpv2, PRODUCTOS_IMAGENES i
+    where pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and p2.pre_id = i.pre_id and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.mar_id = mp2.mar_id 
      and p2.PRE_ID = dpv2.PRE_ID and dpv2.LPP_ID = 1 and p2.pre_activo = 'SI' order by dpv2.ppa_precio desc FOR JSON PATH ) as todo,
     (select distinct pd.marca_modelo, (select distinct pd4.descripcion_hover as hover
     from productos_descripciones pd4 where pd.marca_modelo = pd4.marca_modelo and pd4.pre_id= p.pre_id FOR JSON PATH) as hover

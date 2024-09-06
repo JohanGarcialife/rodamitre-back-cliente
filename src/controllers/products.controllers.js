@@ -10,7 +10,7 @@ export const geproductosId = async (req, res) => {
     .input("lpp", sql.Int, req.params.lpp)
     .query(
       `select p.pre_id, p.pre_codigo_fabrica as codigo, p.mar_id, p.rup_id , p.spr_id, p.pre_notas as notas, p.pre_comentarios as comentarios,
-      r.rup_descripcion as rubro, sr.spr_descripcion as super_rubro, mp.mar_descripcion as marca_articulo, p.intercambiables, p.formado_por, p.es_parte_de, p.ventas_ult6meses,
+      r.rup_descripcion as rubro, sr.spr_descripcion as super_rubro, mp.mar_descripcion as marca_articulo, p.intercambiables, p.formado_por, p.es_parte_de, p.companieros, p.ventas_ult6meses,
 	    (select distinct pd.marca_modelo, (select distinct pd4.descripcion_hover as hover
       from productos_descripciones pd4 where pd.marca_modelo = pd4.marca_modelo and pd4.pre_id= p.pre_id FOR JSON PATH) as hover
       from productos_descripciones pd where p.pre_id = pd.pre_id FOR JSON PATH ) as aplicaciones,
@@ -40,7 +40,7 @@ export const getviewConsultAuto = async (req, res) => {
   const pool = await getConnection();
 
   const b = `select distinct p.pre_id, p.pre_codigo_fabrica as codigo, p.mar_id, p.rup_id , p.spr_id, p.pre_notas as notas, p.pre_comentarios as comentarios,
-  r.rup_descripcion as rubro, sr.spr_descripcion as super_rubro, mp.mar_descripcion as marca_articulo, p.intercambiables, p.formado_por, p.es_parte_de, p.ventas_ult6meses,
+  r.rup_descripcion as rubro, sr.spr_descripcion as super_rubro, mp.mar_descripcion as marca_articulo, p.intercambiables, p.formado_por, p.es_parte_de, p.companieros, p.ventas_ult6meses,
   (select distinct pd.marca_modelo, (select distinct pd4.descripcion_hover as hover
   from productos_descripciones pd4 where pd.marca_modelo = pd4.marca_modelo and pd4.pre_id= p.pre_id FOR JSON PATH) as hover
   from productos_descripciones pd where p.pre_id = pd.pre_id FOR JSON PATH ) as aplicaciones,
