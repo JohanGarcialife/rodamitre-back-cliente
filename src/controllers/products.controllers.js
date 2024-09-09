@@ -16,15 +16,16 @@ export const geproductosId = async (req, res) => {
       from productos_descripciones pd where p.pre_id = pd.pre_id FOR JSON PATH ) as aplicaciones,
 	    (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id
       and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos,
-      (select distinct p2.pre_codigo_fabrica as codigo, pe.pre_id_principal, pe.pre_id_equivalente, mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, p2.pre_stock_actual
-	    from PRODUCTOS_EQUIVALENCIAS pe, PRODUCTOS p2, MARCAS_PRODUCTOS mp2, DETALLE_LISTA_PRECIOS_VENTA dpv2 
-	    where  pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.mar_id = mp2.mar_id and p2.PRE_ID = dpv2.PRE_ID and dpv2.LPP_ID = @lpp and p2.pre_activo = 'SI'
+      (select distinct p2.pre_codigo_fabrica as codigo, pe.pre_id_principal, pe.pre_id_equivalente, mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, p2.pre_stock_actual, i2.pre_imagenes
+	    from PRODUCTOS_EQUIVALENCIAS pe, PRODUCTOS p2, MARCAS_PRODUCTOS mp2, DETALLE_LISTA_PRECIOS_VENTA dpv2, PRODUCTOS_IMAGENES i2
+	    where  pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.pre_id = i2.pre_id and p2.mar_id = mp2.mar_id and p2.PRE_ID = dpv2.PRE_ID and dpv2.LPP_ID = @lpp and p2.pre_activo = 'SI'
 	    order by dpv2.ppa_precio desc FOR JSON PATH ) as equivalente,
-      cdp.cdp_descuento as descuento_producto,cdm.CDM_DESCUENTO as descuento_marca, cdr.cdr_descuento as descuento_rubro, dpv.ppa_precio, p.pre_stock_actual
+      cdp.cdp_descuento as descuento_producto,cdm.CDM_DESCUENTO as descuento_marca, cdr.cdr_descuento as descuento_rubro, dpv.ppa_precio, p.pre_stock_actual, i.pre_imagenes
       from PRODUCTOS as p
       left join MARCAS_PRODUCTOS as mp on p.MAR_ID = mp.MAR_ID
       join SUPER_RUBROS as sr on p.spr_id = sr.spr_id
       join RUBROS as r on p.rup_id = r.rup_id
+      left join PRODUCTOS_IMAGENES as i on p.PRE_ID = i.PRE_ID 
       left join DETALLE_LISTA_PRECIOS_VENTA  as dpv on p.PRE_ID = dpv.PRE_ID and p.PRE_ACTIVO = 'SI'
       left join CLIENTES_DESC_PROCEDENCIAS as cdm on p.MAR_ID = cdm.MAR_ID and cdm.CLI_ID = @id and cdm.CDM_ACTIVO = 'SI'
       left join CLIENTES_DESC_PRODUCTOS as cdp on  p.PRE_ID = cdp.PRE_ID and cdp.cli_id = @id and cdp.CDP_ACTIVO = 'SI'
@@ -46,16 +47,17 @@ export const getviewConsultAuto = async (req, res) => {
   from productos_descripciones pd where p.pre_id = pd.pre_id FOR JSON PATH ) as aplicaciones,
   (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id
   and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos,
-  (select distinct p2.pre_codigo_fabrica as codigo, pe.pre_id_principal, pe.pre_id_equivalente, mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, p2.pre_stock_actual
-  from PRODUCTOS_EQUIVALENCIAS pe, PRODUCTOS p2, MARCAS_PRODUCTOS mp2, DETALLE_LISTA_PRECIOS_VENTA dpv2 
-  where  pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.mar_id = mp2.mar_id and p2.PRE_ID = dpv2.PRE_ID and dpv2.LPP_ID = ${req.params.lpp} and p2.pre_activo = 'SI'
+  (select distinct p2.pre_codigo_fabrica as codigo, pe.pre_id_principal, pe.pre_id_equivalente, mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, p2.pre_stock_actual, i2.pre_imagenes
+  from PRODUCTOS_EQUIVALENCIAS pe, PRODUCTOS p2, MARCAS_PRODUCTOS mp2, DETALLE_LISTA_PRECIOS_VENTA dpv2, PRODUCTOS_IMAGENES i2
+  where  pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.mar_id = mp2.mar_id and p2.pre_id = i2.pre_id and p2.PRE_ID = dpv2.PRE_ID and dpv2.LPP_ID = ${req.params.lpp} and p2.pre_activo = 'SI'
   order by dpv2.ppa_precio desc FOR JSON PATH ) as equivalente,
-  cdp.cdp_descuento as descuento_producto,cdm.CDM_DESCUENTO as descuento_marca, cdr.cdr_descuento as descuento_rubro, dpv.ppa_precio, p.pre_stock_actual
+  cdp.cdp_descuento as descuento_producto,cdm.CDM_DESCUENTO as descuento_marca, cdr.cdr_descuento as descuento_rubro, dpv.ppa_precio, p.pre_stock_actual, i.pre_imagenes
   from PRODUCTOS as p
   left join MARCAS_PRODUCTOS as mp on p.MAR_ID = mp.MAR_ID
   join PRODUCTOS_DESCRIPCIONES pd on p.pre_id = pd.pre_id
   join SUPER_RUBROS as sr on p.spr_id = sr.spr_id
   join RUBROS as r on p.rup_id = r.rup_id
+  left join PRODUCTOS_IMAGENES as i on p.PRE_ID = i.PRE_ID 
   left join DETALLE_LISTA_PRECIOS_VENTA  as dpv on p.PRE_ID = dpv.PRE_ID and p.PRE_ACTIVO = 'SI'
   left join CLIENTES_DESC_PROCEDENCIAS as cdm on p.MAR_ID = cdm.MAR_ID and cdm.CLI_ID = ${req.params.id} and cdm.CDM_ACTIVO = 'SI'
   left join CLIENTES_DESC_PRODUCTOS as cdp on  p.PRE_ID = cdp.PRE_ID and cdp.cli_id = ${req.params.id} and cdp.CDP_ACTIVO = 'SI'
@@ -251,12 +253,12 @@ export const getviewConsultmodelo = async (req, res) => {
   (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id 
   and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos, mp.mar_descripcion as marca_articulo, r.rup_descripcion as rubro, p.rup_id,
   cdp.cdm_descuento as descuento_marca,cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio, 
-  (select distinct p2.pre_codigo_fabrica as codigo, pe.pre_id_principal, pe.pre_id_equivalente, mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, p2.pre_stock_actual
-  from PRODUCTOS_EQUIVALENCIAS pe, PRODUCTOS p2, MARCAS_PRODUCTOS mp2, DETALLE_LISTA_PRECIOS_VENTA dpv2 
-  where  pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.mar_id = mp2.mar_id and p2.PRE_ID = dpv2.PRE_ID and dpv2.LPP_ID = ${req.params.lpp} and p2.pre_activo = 'SI'
+  (select distinct p2.pre_codigo_fabrica as codigo, pe.pre_id_principal, pe.pre_id_equivalente, mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, p2.pre_stock_actual, i2.pre_imagenes
+  from PRODUCTOS_EQUIVALENCIAS pe, PRODUCTOS p2, MARCAS_PRODUCTOS mp2, DETALLE_LISTA_PRECIOS_VENTA dpv2, PRODUCTOS_IMAGENES i2
+  where  pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.pre_id = i2.pre_id and p2.mar_id = mp2.mar_id and p2.PRE_ID = dpv2.PRE_ID and dpv2.LPP_ID = ${req.params.lpp} and p2.pre_activo = 'SI'
   order by dpv2.ppa_precio desc FOR JSON PATH ) as equivalente,
   (select DISTINCT  md.mde_descripcion from MOTORES_DENOMINACIONES md, PRODUCTOS_DESCRIPCIONES pd2  where pd2.mde_id = md.mde_id 
-  and pd.pre_id = pd2.pre_id and pd2.mod_id in (${req.body.mod_id}) order by md.mde_descripcion desc FOR JSON PATH) as motor, a.atr_descripcion as eje, pa.pra_valor as dt
+  and pd.pre_id = pd2.pre_id and pd2.mod_id in (${req.body.mod_id}) order by md.mde_descripcion desc FOR JSON PATH) as motor, a.atr_descripcion as eje, pa.pra_valor as dt, i.pre_imagenes
   from PRODUCTOS p 
   join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
   join PRODUCTOS_DESCRIPCIONES pd on p.pre_id = pd.pre_id
@@ -264,6 +266,7 @@ export const getviewConsultmodelo = async (req, res) => {
   LEFT join PRODUCTOS_ATRIBUTOS pa on p.PRE_ID = pa.PRE_ID and pa.ATR_ID = 39
   LEFT join ATRIBUTOS a on pa.ATR_ID = a.ATR_ID
   join DETALLE_LISTA_PRECIOS_VENTA dlpv on p.pre_id = dlpv.pre_id and p.pre_activo  = 'SI'
+  left join productos_imagenes as i on p.PRE_ID = i.PRE_ID 
   left join CLIENTES_DESC_PROCEDENCIAS cdp on cdp.cli_id = ${req.params.id} and p.mar_id = cdp.mar_id and cdp.cdm_activo = 'SI' 
   left join CLIENTES_DESC_PRODUCTOS cdp2 on cdp2.cli_id = ${req.params.id} and p.pre_id = cdp2.pre_id and cdp2.cdp_activo = 'SI'  
   left join CLIENTES_DESC_RUBROS cdr on cdr.cli_id = ${req.params.id} and p.rup_id = cdr.rup_id  and cdr.cdr_activo = 'SI' 
@@ -273,15 +276,16 @@ export const getviewConsultmodelo = async (req, res) => {
   (select a.atr_descripcion, pa.pra_valor from ATRIBUTOS a, PRODUCTOS_ATRIBUTOS pa where pa.atr_id = a.atr_id 
   and p.pre_id = pa.pre_id  FOR JSON PATH ) as atributos, mp.mar_descripcion as marca_articulo, r.rup_descripcion as rubro, p.rup_id,
   cdp.cdm_descuento as descuento_marca,cdp2.cdp_descuento as descuento_producto, cdr.cdr_descuento as descuento_rubro, dlpv.ppa_precio, 
-  (select distinct p2.pre_codigo_fabrica as codigo, pe.pre_id_principal, pe.pre_id_equivalente, mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, p2.pre_stock_actual
-  from PRODUCTOS_EQUIVALENCIAS pe, PRODUCTOS p2, MARCAS_PRODUCTOS mp2, DETALLE_LISTA_PRECIOS_VENTA dpv2 
-  where  pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.mar_id = mp2.mar_id and p2.PRE_ID = dpv2.PRE_ID and dpv2.LPP_ID = ${req.params.lpp} and p2.pre_activo = 'SI'
+  (select distinct p2.pre_codigo_fabrica as codigo, pe.pre_id_principal, pe.pre_id_equivalente, mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, p2.pre_stock_actual, i2.pre_imagenes
+  from PRODUCTOS_EQUIVALENCIAS pe, PRODUCTOS p2, MARCAS_PRODUCTOS mp2, DETALLE_LISTA_PRECIOS_VENTA dpv2, PRODUCTOS_IMAGENES i2
+  where  pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.pre_id = i2.pre_id and p2.mar_id = mp2.mar_id and p2.PRE_ID = dpv2.PRE_ID and dpv2.LPP_ID = ${req.params.lpp} and p2.pre_activo = 'SI'
   order by dpv2.ppa_precio desc FOR JSON PATH ) as equivalente, 
-  (select DISTINCT md.mde_descripcion from MOTORES_DENOMINACIONES md where pd.mde_id = md.mde_id  FOR JSON PATH) as motor, a.atr_descripcion as eje, pa.pra_valor as dt
+  (select DISTINCT md.mde_descripcion from MOTORES_DENOMINACIONES md where pd.mde_id = md.mde_id  FOR JSON PATH) as motor, a.atr_descripcion as eje, pa.pra_valor as dt, i.pre_imagenes
   from PRODUCTOS p 
   join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
   join PRODUCTOS_DESCRIPCIONES pd on p.pre_id = pd.pre_id
   join RUBROS r on p.rup_id = r.rup_id
+  left join productos_imagenes as i on p.PRE_ID = i.PRE_ID 
   LEFT join PRODUCTOS_ATRIBUTOS pa on p.PRE_ID = pa.PRE_ID and pa.ATR_ID = 39
   LEFT join ATRIBUTOS a on pa.ATR_ID = a.ATR_ID
   join DETALLE_LISTA_PRECIOS_VENTA dlpv on p.pre_id = dlpv.pre_id and p.pre_activo  = 'SI'
