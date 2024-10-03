@@ -6,7 +6,8 @@ export const buscar = async (req, res) => {
   const pool = await getConnection();
   const a = req.body.p.trim();
   const busqv = a.split(" ");
-  console.log(busqv);
+
+  console.log(busqv, "verrrrrr");
 
   const concatenar =
     busqv.length === 1
@@ -30,7 +31,7 @@ export const buscar = async (req, res) => {
       and CAMPO_BUSQUEDA like '%${busqv[4]}%'
       `;
 
-  const pro = `codigo_principal like '%${req.body.p}%'`;
+ const pro = `codigo_principal like '%${req.body.p}%' or codigo_equivalente like '%${req.body.p}%'`;
   const p = `select DISTINCT al.pre_id_principal,al.codigo_principal,(select distinct ps.codigo_equivalente, 
   ps.pre_id_equivalente, ps.pre_id_principal, ps.marca from PRODUCTOS_EQUIVALENCIAS ps where  CODIGO_EQUIVALENTE ='${req.body.p}' 
   and al.PRE_ID_PRINCIPAL = ps.pre_id_principal FOR JSON PATH) as comparar from PRODUCTOS_EQUIVALENCIAS al where`;
@@ -104,6 +105,8 @@ export const buscar = async (req, res) => {
     !req.body.interior
   ) {
     const result = await pool.request().query(c);
+
+    console.log(result.recordset,"resultado antes de")
     if (result.recordset.length > 0) {
       console.log("BUSCAMOS EL CODIGO PRINCIPAL");
       buscamos(result);
