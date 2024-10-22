@@ -259,7 +259,8 @@ export const getviewConsultmodelo = async (req, res) => {
   order by dpv2.ppa_precio desc FOR JSON PATH ) as equivalente,
   (select DISTINCT  md.mde_descripcion from MOTORES_DENOMINACIONES md, PRODUCTOS_DESCRIPCIONES pd2  where pd2.mde_id = md.mde_id 
   and pd.pre_id = pd2.pre_id and pd2.mod_id in (${req.body.mod_id}) order by md.mde_descripcion desc FOR JSON PATH) as motor, a.atr_descripcion as eje, pa.pra_valor as dt, i.pre_imagenes
-  from PRODUCTOS p 
+  from PRODUCTOS_EQUIVALENCIAS pe
+  join PRODUCTOS p on pe.pre_id_principal = p.pre_id
   join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
   join PRODUCTOS_DESCRIPCIONES pd on p.pre_id = pd.pre_id
   join RUBROS r on p.rup_id = r.rup_id
@@ -281,7 +282,8 @@ export const getviewConsultmodelo = async (req, res) => {
   where  pe.PRE_ID_EQUIVALENTE = p2.PRE_ID and pe.PRE_ID_PRINCIPAL = p.PRE_ID and p2.pre_id = i2.pre_id and p2.mar_id = mp2.mar_id and p2.PRE_ID = dpv2.PRE_ID and dpv2.LPP_ID = ${req.params.lpp} and p2.pre_activo = 'SI'
   order by dpv2.ppa_precio desc FOR JSON PATH ) as equivalente, 
   (select DISTINCT md.mde_descripcion from MOTORES_DENOMINACIONES md where pd.mde_id = md.mde_id  FOR JSON PATH) as motor, a.atr_descripcion as eje, pa.pra_valor as dt, i.pre_imagenes
-  from PRODUCTOS p 
+  from PRODUCTOS_EQUIVALENCIAS pe
+  join PRODUCTOS p on pe.pre_id_principal = p.pre_id
   join MARCAS_PRODUCTOS mp on p.mar_id = mp.mar_id
   join PRODUCTOS_DESCRIPCIONES pd on p.pre_id = pd.pre_id
   join RUBROS r on p.rup_id = r.rup_id

@@ -7,7 +7,7 @@ export const buscar = async (req, res) => {
   const a = req.body.p.trim();
   const busqv = a.split(" ");
 
-  console.log(busqv, "verrrrrr");
+  //console.log(busqv, "verrrrrr");
 
   const concatenar =
     busqv.length === 1
@@ -36,7 +36,7 @@ export const buscar = async (req, res) => {
   ps.pre_id_equivalente, ps.pre_id_principal, ps.marca from PRODUCTOS_EQUIVALENCIAS ps where  CODIGO_EQUIVALENTE ='${req.body.p}' 
   and al.PRE_ID_PRINCIPAL = ps.pre_id_principal FOR JSON PATH) as comparar from PRODUCTOS_EQUIVALENCIAS al where`;
   const b = p.concat(" ", concatenar);
-  const c = p.concat(" ", pro);
+  const c = p.concat(" ", pro); 
   const h = ` 
     select p.pre_id, r.rup_descripcion as rubro, p.pre_notas as notas,(select distinct p2.pre_codigo_fabrica as codigo, p2.formado_por, p2.es_parte_de,
     p2.intercambiables, p2.companieros, pe.pre_id_principal,pe.pre_id_equivalente,mp2.mar_descripcion as marca_articulo, dpv2.ppa_precio, 
@@ -76,7 +76,7 @@ export const buscar = async (req, res) => {
       });
 
       const id = array.toString();
-      console.log(id, "busqueda");
+      //console.log(id, "busqueda");
 
       const producto = await pool
         .request()
@@ -106,14 +106,14 @@ export const buscar = async (req, res) => {
   ) {
     const result = await pool.request().query(c);
 
-    console.log(result.recordset,"resultado antes de")
+    //console.log(result.recordset,"resultado antes de")
     if (result.recordset.length > 0) {
-      console.log("BUSCAMOS EL CODIGO PRINCIPAL");
+   //   console.log("BUSCAMOS EL CODIGO PRINCIPAL");
       buscamos(result);
     } else {
-      console.log("Buscamos campo busqueda");
+   //   console.log("Buscamos campo busqueda");
       const result = await pool.request().query(b);
-      console.log(result);
+    //  console.log(result);
       buscamos(result);
     }
   }
@@ -128,13 +128,13 @@ export const buscar = async (req, res) => {
       .query(c.concat(" ", `and interior BETWEEN '${ib}' and '${ip}'`));
 
     if (result.recordset.length > 0) {
-      console.log("BUSCAMOS EL CODIGO PRINCIPAL");
+   //   console.log("BUSCAMOS EL CODIGO PRINCIPAL");
       buscamos(result);
     } else {
       const result = await pool
         .request()
         .query(b.concat(" ", `and interior BETWEEN '${ib}' and '${ip}'`));
-      console.log("Buscamos campo busqueda");
+    //  console.log("Buscamos campo busqueda");
       buscamos(result);
     }
   }
@@ -145,19 +145,19 @@ export const buscar = async (req, res) => {
     req.body.exterior &&
     !req.body.interior
   ) {
-    console.log("busqueda producto + exterior");
+ //   console.log("busqueda producto + exterior");
     const result = await pool
       .request()
       .query(c.concat(" ", `and exterior BETWEEN '${en}' and '${ep}'`));
 
     if (result.recordset.length > 0) {
-      console.log("BUSCAMOS EL CODIGO PRINCIPAL");
+  //    console.log("BUSCAMOS EL CODIGO PRINCIPAL");
       buscamos(result);
     } else {
       const result = await pool
         .request()
         .query(b.concat(" ", `and exterior BETWEEN '${en}' and '${ep}'`));
-      console.log("Buscamos campo busqueda");
+  //    console.log("Buscamos campo busqueda");
       buscamos(result);
     }
   }
@@ -172,20 +172,20 @@ export const buscar = async (req, res) => {
       .query(c.concat(" ", `and altura BETWEEN '${an}' and '${ap}'`));
 
     if (result.recordset.length > 0) {
-      console.log("BUSCAMOS EL CODIGO PRINCIPAL");
+//      console.log("BUSCAMOS EL CODIGO PRINCIPAL");
       buscamos(result);
     } else {
       const result = await pool
         .request()
         .query(b.concat(" ", `and altura BETWEEN '${an}' and '${ap}'`));
-      console.log("Buscamos campo busqueda");
+  //    console.log("Buscamos campo busqueda");
       buscamos(result);
     }
   }
   ///
 
   if (req.body.p && req.body.altura && req.body.exterior && req.body.interior) {
-    console.log("busqueda todos los valores");
+  //  console.log("busqueda todos los valores");
     const result = await pool.request().query(
       c.concat(
         " ",
@@ -196,7 +196,7 @@ export const buscar = async (req, res) => {
     );
 
     if (result.recordset.length > 0) {
-      console.log("BUSCAMOS EL CODIGO PRINCIPAL");
+  //    console.log("BUSCAMOS EL CODIGO PRINCIPAL");
       buscamos(result);
     } else {
       const result = await pool.request().query(
@@ -207,7 +207,7 @@ export const buscar = async (req, res) => {
            and exterior BETWEEN '${en}' and '${ep}'`
         )
       );
-      console.log("Buscamos campo busqueda");
+   //   console.log("Buscamos campo busqueda");
       buscamos(result);
     }
   }
@@ -218,7 +218,7 @@ export const buscar = async (req, res) => {
     !req.body.exterior &&
     req.body.interior
   ) {
-    console.log("busqueda producto + altura + interior");
+//    console.log("busqueda producto + altura + interior");
     const result = await pool.request().query(
       c.concat(
         " ",
@@ -229,7 +229,7 @@ export const buscar = async (req, res) => {
     );
 
     if (result.recordset.length > 0) {
-      console.log("BUSCAMOS EL CODIGO PRINCIPAL");
+ //     console.log("BUSCAMOS EL CODIGO PRINCIPAL");
       buscamos(result);
     } else {
       const result = await pool.request().query(
@@ -240,7 +240,7 @@ export const buscar = async (req, res) => {
            `
         )
       );
-      console.log("Buscamos campo busqueda");
+  //    console.log("Buscamos campo busqueda");
       buscamos(result);
     }
   }
@@ -250,7 +250,7 @@ export const buscar = async (req, res) => {
     req.body.exterior &&
     req.body.interior
   ) {
-    console.log("busqueda producto + exterior + interior");
+//    console.log("busqueda producto + exterior + interior");
 
     const result = await pool.request().query(
       c.concat(
@@ -260,7 +260,7 @@ export const buscar = async (req, res) => {
       )
     );
     if (result.recordset.length > 0) {
-      console.log("BUSCAMOS EL CODIGO PRINCIPAL");
+ //     console.log("BUSCAMOS EL CODIGO PRINCIPAL");
       buscamos(result);
     } else {
       const result = await pool.request().query(
@@ -270,7 +270,7 @@ export const buscar = async (req, res) => {
            and exterior BETWEEN '${en}' and '${ep}'`
         )
       );
-      console.log("Buscamos campo busqueda");
+ //     console.log("Buscamos campo busqueda");
       buscamos(result);
     }
   }
@@ -281,7 +281,7 @@ export const buscar = async (req, res) => {
     req.body.exterior &&
     !req.body.interior
   ) {
-    console.log("busqueda producto + exterior + interior");
+//    console.log("busqueda producto + exterior + interior");
     const result = await pool.request().query(
       c.concat(
         " ",
@@ -291,7 +291,7 @@ export const buscar = async (req, res) => {
     );
 
     if (result.recordset.length > 0) {
-      console.log("BUSCAMOS EL CODIGO PRINCIPAL");
+ //     console.log("BUSCAMOS EL CODIGO PRINCIPAL");
       buscamos(result);
     } else {
       const result = await pool.request().query(
@@ -302,7 +302,7 @@ export const buscar = async (req, res) => {
            and exterior BETWEEN '${en}' and '${ep}'`
         )
       );
-      console.log("Buscamos campo busqueda");
+ //     console.log("Buscamos campo busqueda");
       buscamos(result);
     }
   }
@@ -312,8 +312,8 @@ export const buscar = async (req, res) => {
     !req.body.exterior &&
     req.body.interior
   ) {
-    console.log("existe interior");
-    console.log(ib, ip, "interior valor");
+ //   console.log("existe interior");
+ //   console.log(ib, ip, "interior valor");
 
     const result = await pool.request().query(
       p.concat(
@@ -334,7 +334,7 @@ export const buscar = async (req, res) => {
     req.body.exterior &&
     !req.body.interior
   ) {
-    console.log("existe exterior");
+ //   console.log("existe exterior");
 
     const result = await pool.request().query(
       p.concat(
@@ -353,7 +353,7 @@ export const buscar = async (req, res) => {
     !req.body.exterior &&
     !req.body.interior
   ) {
-    console.log("existe altura");
+ //   console.log("existe altura");
     const result = await pool.request().query(
       p.concat(
         " ",
@@ -372,7 +372,7 @@ export const buscar = async (req, res) => {
     !req.body.exterior &&
     req.body.interior
   ) {
-    console.log("existe altura e interior");
+  //  console.log("existe altura e interior");
 
     const result = await pool.request().query(
       p.concat(
@@ -392,7 +392,7 @@ export const buscar = async (req, res) => {
     req.body.exterior &&
     req.body.interior
   ) {
-    console.log("existe exterior e interior");
+ //   console.log("existe exterior e interior");
     const result = await pool.request().query(
       p.concat(
         " ",
@@ -411,7 +411,7 @@ export const buscar = async (req, res) => {
     req.body.exterior &&
     !req.body.interior
   ) {
-    console.log("existe exterior e altura");
+//    console.log("existe exterior e altura");
     const result = await pool.request().query(
       p.concat(
         " ",
@@ -430,7 +430,7 @@ export const buscar = async (req, res) => {
     req.body.exterior &&
     req.body.interior
   ) {
-    console.log("existe exterior e altura");
+//    console.log("existe exterior e altura");
     const result = await pool.request().query(
       p.concat(
         " ",
